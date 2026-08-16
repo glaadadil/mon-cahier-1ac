@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Cahier — 1AC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F4EC;
+    --ink:#26313C;
+    --ink-soft:#5A6672;
+    --marge:#C0392B;
+    --seyes:#A9C6E8;
+    --chalkboard:#2F5233;
+    --chalkboard-dark:#22402A;
+    --chalk-white:#F4F1E8;
+    --gold:#D4A72C;
+    --line:#E3DFD1;
+    --card:#FFFFFF;
+    --radius:14px;
+    --shadow: 0 2px 10px rgba(38,49,60,0.08);
+    --essentiel:#2F6E8C;
+    --essentiel-bg:#EAF4F8;
+    --piege:#B5482B;
+    --piege-bg:#FDEEE8;
+    --astuce:#9C7A17;
+    --astuce-bg:#FBF4DE;
+    --exercice:#3F4A56;
+    --exercice-bg:#F1F3F0;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Nunito', sans-serif; color:var(--ink); background:var(--paper); min-height:100vh; }
+  .hand{ font-family:'Caveat', cursive; }
+
+  .topbar{
+    background: linear-gradient(180deg, var(--chalkboard), var(--chalkboard-dark));
+    color: var(--chalk-white); padding: 16px 20px; display:flex; align-items:center;
+    justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+  .brand{ display:flex; align-items:baseline; gap:8px; }
+  .brand .title{ font-family:'Caveat', cursive; font-size:32px; font-weight:700; }
+  .brand .subtitle{ font-size:13px; opacity:0.75; letter-spacing:1px; text-transform:uppercase; }
+  .mode-switch{ display:flex; background:rgba(255,255,255,0.12); border-radius:999px; padding:4px; gap:2px; }
+  .mode-btn{
+    border:none; background:transparent; color:var(--chalk-white); opacity:0.75; padding:8px 16px;
+    border-radius:999px; font-family:'Nunito'; font-weight:700; font-size:14px; cursor:pointer; transition:.15s;
+  }
+  .mode-btn.active{ background:var(--chalk-white); color:var(--chalkboard-dark); opacity:1; }
+  .mode-btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  .tabs{ display:flex; gap:6px; padding:14px 20px 0; flex-wrap:wrap; }
+  .tab{
+    border:1px solid var(--line); border-bottom:none; background:var(--card); color:var(--ink-soft);
+    font-family:'Nunito'; font-weight:700; padding:10px 18px; border-radius:12px 12px 0 0; cursor:pointer; font-size:14px;
+  }
+  .tab.active{ color:var(--chalkboard); background:var(--paper); position:relative; top:1px; }
+  .tab:focus-visible{ outline:2px solid var(--chalkboard); outline-offset:2px; }
+
+  .page{
+    background: repeating-linear-gradient(var(--paper) 0 27px, var(--seyes) 27px 28px), var(--paper);
+    background-position: 0 4px; border-top:1px solid var(--line); min-height: 70vh; padding: 28px 28px 60px 64px; position:relative;
+  }
+  .page::before{ content:""; position:absolute; top:0; bottom:0; left:44px; width:2px; background:var(--marge); opacity:0.55; }
+  @media (max-width:640px){ .page{ padding:22px 16px 50px 40px; } .page::before{ left:26px; } }
+
+  h2.section-title{ font-family:'Caveat', cursive; font-size:30px; margin:0 0 4px; color:var(--chalkboard-dark); font-weight:700; }
+  .muted{ color:var(--ink-soft); font-size:14px; margin:0 0 18px; }
+
+  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px; margin-bottom:12px; }
+  .next-card{ border:2px dashed var(--gold); background:#FFFCF2; }
+  .next-card .eyebrow{ font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--gold); margin-bottom:4px;}
+
+  .task-row{
+    display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--card);
+    border-radius:12px; box-shadow:var(--shadow); margin-bottom:8px;
+  }
+  .task-row.done{ opacity:0.55; }
+  .task-row.done .task-title{ text-decoration: line-through; }
+  .dot{ width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .task-main{ flex:1; min-width:0; }
+  .task-title{ font-weight:700; font-size:15px; }
+  .task-sub{ font-size:12.5px; color:var(--ink-soft); }
+  .chip{ font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--paper); color:var(--ink-soft); white-space:nowrap; }
+  .checkbox{
+    width:26px; height:26px; border-radius:8px; border:2px solid var(--line); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; background:#fff;
+  }
+  .checkbox.checked{ background:var(--chalkboard); border-color:var(--chalkboard); color:#fff; font-weight:900; }
+
+  .subject-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px; }
+  .subject-card{ border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; cursor:pointer; color:#fff; border:none; text-align:left; font-family:'Nunito'; }
+  .subject-card .subject-name{ font-weight:800; font-size:16px; }
+  .subject-card .subject-hint{ font-size:12px; opacity:0.9; margin-top:4px; }
+  .subject-card.active-subject{ outline:3px solid var(--chalkboard-dark); outline-offset:2px; }
+
+  .empty{ text-align:center; padding:40px 20px; color:var(--ink-soft); }
+  .empty .hand{ font-size:26px; display:block; margin-bottom:6px; color:var(--chalkboard-dark); }
+
+  .mood-row{ display:flex; gap:10px; margin-top:22px; align-items:center; }
+  .mood-btn{ font-size:26px; background:#fff; border:2px solid var(--line); border-radius:50%; width:52px; height:52px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mood-btn.selected{ border-color:var(--marge); box-shadow:0 0 0 3px rgba(192,57,43,0.15); }
+
+  .week-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
+  @media (max-width:900px){ .week-grid{ grid-template-columns:repeat(2,1fr);} }
+  .day-col{ background:var(--card); border-radius:12px; box-shadow:var(--shadow); padding:10px; min-height:110px; }
+  .day-head{ font-weight:800; font-size:13px; margin-bottom:6px; color:var(--chalkboard-dark); text-transform:capitalize;}
+  .day-head.today{ color:var(--marge); }
+  .mini-task{ font-size:12px; padding:4px 6px; border-radius:7px; margin-bottom:4px; background:var(--paper); }
+  .mini-task.done{ opacity:.5; text-decoration:line-through; }
+
+  label{ display:block; font-weight:700; font-size:13px; margin:14px 0 6px; }
+  input, select, textarea{ width:100%; font-family:'Nunito'; font-size:14px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--line); background:#fff; color:var(--ink); }
+  textarea{ min-height:80px; resize:vertical; }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+  @media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } }
+  .btn{ font-family:'Nunito'; font-weight:800; font-size:14px; padding:11px 20px; border-radius:10px; border:none; cursor:pointer; }
+  .btn-primary{ background:var(--chalkboard); color:#fff; margin-top:18px; }
+  .btn-primary:hover{ background:var(--chalkboard-dark); }
+  .btn-secondary{ background:var(--gold); color:#3a2c05; margin-top:10px; }
+  .btn-ghost{ background:transparent; color:var(--marge); text-decoration:underline; font-weight:700; padding:6px; }
+  .btn-small{ background:#fff; border:1.5px solid var(--line); border-radius:8px; padding:6px 12px; font-weight:700; font-size:12.5px; cursor:pointer; }
+  .btn-danger{ background:#fff; color:var(--marge); border:1.5px solid var(--marge); padding:6px 12px; border-radius:8px; font-weight:700; font-size:12.5px; cursor:pointer; }
+
+  .filters{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  select.filter-select{ width:auto; }
+
+  .loading{ padding:60px 20px; text-align:center; color:var(--ink-soft); font-family:'Caveat'; font-size:22px; }
+  footer.foot{ text-align:center; padding:18px; font-size:12px; color:var(--ink-soft); }
+
+  /* ---- Chapter cards (subject resources) ---- */
+  .chapter-list{ display:flex; flex-direction:column; gap:16px; margin-top:16px; }
+  .chapter-card{ background:var(--card); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; }
+  .chapter-card.compact{ box-shadow:none; border-radius:0; }
+
+  /* ---- Sommaire (index cliquable des chapitres) ---- */
+  .sommaire-group-label{ font-family:'Caveat', cursive; font-size:19px; font-weight:700; color:var(--ink-soft); margin:14px 0 6px; }
+  .sommaire-group-label:first-child{ margin-top:0; }
+  .sommaire-list{ display:flex; flex-direction:column; gap:8px; }
+  .sommaire-item{ background:var(--card); border-radius:12px; box-shadow:var(--shadow); overflow:hidden; }
+  .sommaire-row{
+    width:100%; display:flex; align-items:center; gap:10px; padding:12px 14px; border:none; background:transparent;
+    cursor:pointer; font-family:'Nunito'; text-align:left;
+  }
+  .sommaire-item.open .sommaire-row{ background:var(--paper); }
+  .sommaire-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .sommaire-title{ flex:1; font-weight:700; font-size:14.5px; color:var(--ink); }
+  .sommaire-chevron{ color:var(--ink-soft); font-size:12px; flex-shrink:0; }
+  .sommaire-content{ border-top:1px solid var(--line); }
+  .chapter-head{ padding:14px 18px; color:#fff; }
+  .chapter-eyebrow{ font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; opacity:0.85; }
+  .chapter-title{ font-family:'Caveat', cursive; font-size:26px; font-weight:700; line-height:1.1; }
+  .chapter-body{ padding:16px 18px 18px; }
+  .chapter-essentiel{ background:var(--essentiel-bg); color:var(--essentiel); border-left:4px solid var(--essentiel); border-radius:8px; padding:10px 12px; font-weight:700; font-size:14px; margin-bottom:14px; }
+  .chapter-section{ margin-bottom:14px; }
+  .chapter-section-label{ font-weight:800; font-size:12.5px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-soft); margin-bottom:5px; }
+  .chapter-text{ font-size:14.5px; line-height:1.65; white-space:pre-wrap; }
+  .box-piege{ background:var(--piege-bg); border-left:4px solid var(--piege); border-radius:8px; padding:10px 12px; }
+  .box-piege .chapter-section-label{ color:var(--piege); }
+  .box-astuce{ background:var(--astuce-bg); border-left:4px solid var(--astuce); border-radius:8px; padding:10px 12px; }
+  .box-astuce .chapter-section-label{ color:var(--astuce); }
+  .box-exercice{ background:var(--exercice-bg); border-radius:8px; padding:12px; }
+  .box-exercice .chapter-section-label{ color:var(--exercice); }
+  .reveal-btn{ margin-top:8px; }
+  .reveal-answer{ display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); font-weight:700; color:var(--chalkboard-dark); }
+  .reveal-answer.shown{ display:block; }
+
+  .subj-tag{ display:inline-block; font-size:11px; font-weight:800; padding:3px 10px; border-radius:999px; color:#fff; margin-right:6px;}
+  .chapter-editor{ background:var(--card); border-radius:14px; box-shadow:var(--shadow); padding:16px 18px; margin-bottom:18px; }
+  .chapter-mini-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:#fff; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; }
+  .chapter-mini-title{ font-weight:700; font-size:14px; }
+  .chapter-mini-actions{ display:flex; gap:6px; }
+  .seed-banner{ background:#EAF4F8; border:1.5px dashed var(--essentiel); border-radius:12px; padding:14px 16px; margin-bottom:16px; }
+  .seed-banner p{ margin:0 0 10px; font-size:13.5px; color:var(--ink); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading" id="loading">Ouverture du cahier…</div>
+</div>
+
+<script>
+const SUBJECTS = [
+  {key:'arabe',    label:'Arabe',                 color:'#E4572E'},
+  {key:'islamique',label:'Éducation islamique',    color:'#2E7D5B'},
+  {key:'francais', label:'Français',               color:'#3B6FB6'},
+  {key:'anglais',  label:'Anglais',                color:'#8B5CF6'},
+  {key:'maths',    label:'Mathématiques',          color:'#E8930F'},
+  {key:'svt',      label:'SVT',                    color:'#159895'},
+  {key:'pc',       label:'Physique-Chimie',        color:'#4B4E9E'},
+  {key:'social',   label:'Sciences sociales',      color:'#A6702B'},
+  {key:'info',     label:'Informatique',           color:'#D6449A'},
+];
+const TYPES = [
+  {key:'devoir',   label:'Devoir'},
+  {key:'exercice', label:'Exercice'},
+  {key:'revision', label:'Révision'},
+  {key:'controle', label:'Contrôle'},
+];
+const MOODS = ['😊','🙂','😕'];
+
+/* ---------- Contenu Mathématiques prêt à charger ---------- */
+const SEED = {
+  maths: [
+    {semester:'S1', title:"Nombres entiers et décimaux positifs : opérations",
+      essentiel:"Un nombre décimal a une partie entière et une partie décimale. Un entier est aussi un décimal (17 = 17,0).",
+      cours:"Pour additionner ou soustraire des décimaux, on aligne toujours la virgule sous la virgule (on complète avec des zéros si besoin). Pour multiplier, on multiplie sans les virgules puis on compte au total le nombre de chiffres après les virgules dans les deux nombres, pour replacer la virgule.\nExemple : 3,4 × 2,05 → 34 × 205 = 6970 → 1+2 = 3 chiffres après la virgule → 6,970.",
+      piege:"Aligner les chiffres de droite à droite au lieu d'aligner les virgules. Il faut toujours aligner la virgule, jamais le dernier chiffre.",
+      astuce:"Compte les chiffres après la virgule AVANT de poser la multiplication, ça évite de l'oublier à la fin.",
+      exercice:"Calcule 7,25 + 12,6 et 4,2 × 1,3.",
+      reponse:"19,85 et 5,46."},
+    {semester:'S1', title:"Fractions : opérations",
+      essentiel:"Une fraction a/b représente un partage en b parts égales dont on prend a parts ; elle représente aussi a ÷ b.",
+      cours:"Pour additionner ou soustraire deux fractions, il faut le même dénominateur. Exemple : 1/4 + 1/6 → dénominateur commun 12 → 3/12 + 2/12 = 5/12.\nPour multiplier deux fractions, on multiplie les numérateurs entre eux et les dénominateurs entre eux : 2/3 × 4/5 = 8/15.",
+      piege:"Additionner numérateurs et dénominateurs directement (1/4 + 1/6 n'est PAS 2/10). Il faut le même dénominateur d'abord.",
+      astuce:"Dessine deux rectangles partagés différemment pour voir pourquoi il faut le même découpage avant d'additionner.",
+      exercice:"Calcule 2/5 + 1/5 et 3/4 × 2/3.",
+      reponse:"3/5 et 6/12 (soit 1/2)."},
+    {semester:'S1', title:"Nombres relatifs, décimaux négatifs : opérations",
+      essentiel:"Un nombre relatif est positif, négatif ou nul. Sur une droite graduée, plus on va à droite, plus le nombre est grand.",
+      cours:"Même signe : on additionne les distances à zéro et on garde le signe commun : (-3)+(-5) = -8. Signes différents : on soustrait la plus petite distance de la plus grande et on garde le signe du nombre le plus loin de zéro : (-7)+4 = -3. Soustraire revient à additionner l'opposé : 5-(-3) = 5+3 = 8.",
+      piege:"Confondre « plus petit » avec « moins loin de zéro » : -10 est plus petit que -2.",
+      astuce:"Pense à la température en °C : c'est le repère le plus concret pour les relatifs.",
+      exercice:"Calcule (-8) + 3 et 6 - (-4).",
+      reponse:"-5 et 10."},
+    {semester:'S1', title:"Puissance d'un nombre relatif",
+      essentiel:"aⁿ signifie qu'on multiplie a par lui-même n fois.",
+      cours:"5² = 5×5 = 25. (-3)² = (-3)×(-3) = 9 (positif, car moins × moins = plus). Attention : (-3)² = 9 mais -3² = -(3²) = -9 (sans parenthèses, le carré passe avant le signe moins).",
+      piege:"Oublier les parenthèses autour d'un nombre négatif avant de l'élever au carré — ça change tout le résultat.",
+      astuce:"Puissance paire (2,4,6…) d'un nombre négatif → résultat positif. Puissance impaire (3,5…) → garde le signe négatif.",
+      exercice:"Calcule (-2)³ et (-4)².",
+      reponse:"-8 et 16."},
+    {semester:'S1', title:"Angles et triangles",
+      essentiel:"Un angle se mesure en degrés (°). La somme des trois angles d'un triangle fait toujours 180°.",
+      cours:"Angle aigu < 90°, angle droit = 90°, angle obtus entre 90° et 180°. Si tu connais 2 angles d'un triangle, le 3e = 180° - (angle1+angle2). Triangle isocèle : 2 côtés égaux. Équilatéral : 3 côtés égaux (angles de 60°). Rectangle : un angle droit.",
+      piege:"Mal placer le centre du rapporteur — il doit être exactement sur le sommet de l'angle.",
+      astuce:"Un angle droit ressemble toujours au coin d'une feuille de papier, pratique pour vérifier « à l'œil ».",
+      exercice:"Un triangle a un angle de 50° et un de 70°. Quel est le troisième ?",
+      reponse:"180 - (50+70) = 60°."},
+    {semester:'S1', title:"Droites : parallélisme et perpendicularité",
+      essentiel:"Deux droites parallèles ne se croisent jamais. Deux droites perpendiculaires se croisent à angle droit (90°).",
+      cours:"Pour tracer une parallèle : équerre posée contre une règle bien fixe, on fait glisser l'équerre. Pour une perpendiculaire : le côté droit de l'équerre directement sur la droite. Notation : (d1)//(d2) parallèle, (d1)⊥(d2) perpendiculaire.",
+      piege:"Faire glisser l'équerre sans garder la règle fixe — la parallèle tracée est alors décalée.",
+      astuce:"Deux droites perpendiculaires à une même troisième droite sont toujours parallèles entre elles.",
+      exercice:"Si (d1)⊥(d3) et (d2)⊥(d3), que peut-on dire de (d1) et (d2) ?",
+      reponse:"Elles sont parallèles."},
+    {semester:'S1', title:"Droites remarquables : médiatrice, bissectrice, cercle circonscrit",
+      essentiel:"La médiatrice d'un segment est perpendiculaire à ce segment et passe par son milieu. La bissectrice partage un angle en deux angles égaux.",
+      cours:"Tout point de la médiatrice de [AB] est à égale distance de A et de B. Construction au compas : même écartement pointé en A puis en B, la droite passant par les deux points d'intersection des arcs est la médiatrice. Le centre du cercle circonscrit à un triangle est le point où se croisent ses trois médiatrices.",
+      piege:"Changer l'écartement du compas entre les deux arcs — il faut garder exactement le même écartement.",
+      astuce:"« Médiatrice = MIlieu, perpendiculAIRE » — elle passe toujours par le milieu, à angle droit.",
+      exercice:"M est sur la médiatrice de [AB]. Si MA = 5 cm, combien vaut MB ?",
+      reponse:"5 cm."},
+    {semester:'S2', title:"Développement et factorisation",
+      essentiel:"Développer transforme un produit en somme. Factoriser fait l'inverse : une somme devient un produit.",
+      cours:"Distributivité : k(a+b) = ka+kb. Développer : 3(x+5) = 3x+15. Factoriser : on repère un facteur commun : 3x+15 = 3(x+5).",
+      piege:"Oublier de multiplier TOUS les termes de la parenthèse : dans 4(x-2), il faut faire 4×x ET 4×2.",
+      astuce:"Après avoir développé, refactorise pour vérifier que tu retombes sur l'expression de départ.",
+      exercice:"Développe 5(x+3), puis factorise 8x+12.",
+      reponse:"5x+15, puis 4(2x+3)."},
+    {semester:'S2', title:"Équations",
+      essentiel:"Une équation est une égalité avec une inconnue x. La résoudre, c'est trouver la valeur de x qui rend l'égalité vraie.",
+      cours:"Règle d'or : ce qu'on fait d'un côté, on le fait aussi de l'autre (comme une balance). x+7=12 → x=5 (on soustrait 7 des deux côtés). 3x=18 → x=6 (on divise les deux côtés par 3).",
+      piege:"Oublier de vérifier la solution en la remplaçant dans l'équation de départ.",
+      astuce:"Imagine une balance à deux plateaux : ce que tu retires ou ajoutes d'un côté, fais-le aussi de l'autre.",
+      exercice:"Résous x - 4 = 9, puis vérifie.",
+      reponse:"x = 13 (13-4=9 ✓)."},
+    {semester:'S2', title:"Symétrie centrale",
+      essentiel:"La symétrie centrale de centre O transforme A en A' tel que O soit le milieu de [AA'].",
+      cours:"On trace la droite (AO), puis on place A' sur cette droite de l'autre côté de O, à la même distance : OA = OA'. Pour une figure entière, on fait de même pour chaque sommet puis on relie dans le même ordre.",
+      piege:"Placer A' sur la droite sans respecter OA = OA'.",
+      astuce:"C'est comme faire pivoter la figure d'un demi-tour (180°) autour de O.",
+      exercice:"O est le milieu de [AA']. Si OA = 4 cm, combien vaut AA' ?",
+      reponse:"8 cm."},
+    {semester:'S2', title:"Parallélogrammes et quadrilatères particuliers",
+      essentiel:"Un parallélogramme a ses côtés opposés parallèles deux à deux.",
+      cours:"Propriété clé : ses diagonales se coupent en leur milieu. Rectangle = parallélogramme + 4 angles droits. Losange = parallélogramme + 4 côtés égaux. Carré = rectangle ET losange en même temps.",
+      piege:"Croire qu'un quadrilatère est un parallélogramme juste parce qu'il « a l'air » d'en être un — il faut le prouver.",
+      astuce:"Carré = rectangle + losange : le quadrilatère le plus « complet ».",
+      exercice:"Dans ABCD, diagonales se coupent en I. Si AI = 3 cm, combien vaut IC ?",
+      reponse:"3 cm (I est le milieu des deux diagonales)."},
+    {semester:'S2', title:"Sécantes à deux droites parallèles et angles",
+      essentiel:"Une sécante qui coupe deux droites parallèles crée des paires d'angles liés entre eux.",
+      cours:"Les angles alternes-internes (de part et d'autre de la sécante, entre les parallèles) sont égaux. Les angles correspondants (même position) sont égaux aussi. Très utile pour calculer un angle sans le mesurer.",
+      piege:"Appliquer la règle alors que les droites ne sont pas parallèles.",
+      astuce:"Dessine la figure en gros et en couleur au brouillon pour repérer les angles qui se correspondent.",
+      exercice:"(d1)//(d2), sécante commune. Un angle mesure 65°. Que vaut son alterne-interne ?",
+      reponse:"65° (ils sont égaux)."},
+    {semester:'S2', title:"Cercle, disque",
+      essentiel:"Le cercle est la ligne des points à distance r (rayon) d'un centre. Le disque, c'est le cercle + son intérieur.",
+      cours:"Périmètre : P = 2×π×r. Aire du disque : A = π×r² (π ≈ 3,14). Exemple : rayon 5 cm → périmètre 2×3,14×5 = 31,4 cm, aire 3,14×25 = 78,5 cm².",
+      piege:"Confondre rayon (centre-bord) et diamètre (bord-bord, le double du rayon).",
+      astuce:"Diamètre = 2 × rayon, toujours. Vérifie laquelle des deux mesures est donnée dans l'énoncé.",
+      exercice:"Un cercle a un rayon de 3 cm. Calcule son périmètre (à 0,1 près).",
+      reponse:"2×3,14×3 = 18,84 ≈ 18,8 cm."},
+    {semester:'S2', title:"Prisme droit et cylindre",
+      essentiel:"Solides à deux bases identiques et parallèles. Volume = aire de la base × hauteur.",
+      cours:"Prisme base 4×3 cm, hauteur 6 cm : V = (4×3)×6 = 72 cm³. Cylindre rayon 2 cm, hauteur 10 cm : V = (π×2²)×10 ≈ 125,6 cm³.",
+      piege:"Oublier l'unité au cube (cm³) pour un volume — ce n'est ni des cm ni des cm².",
+      astuce:"Calcule toujours d'abord l'aire de la base seule, puis multiplie par la hauteur.",
+      exercice:"Un prisme a une base d'aire 15 cm² et une hauteur de 4 cm. Volume ?",
+      reponse:"60 cm³."},
+    {semester:'S2', title:"Droite graduée, repère dans le plan",
+      essentiel:"Un repère (deux axes gradués perpendiculaires) permet de situer un point par deux nombres : (abscisse ; ordonnée).",
+      cours:"Pour placer A(3 ; 2) : on avance de 3 sur l'axe horizontal (abscisse), puis on monte de 2 (ordonnée).",
+      piege:"Inverser l'ordre — lire ou placer l'ordonnée avant l'abscisse.",
+      astuce:"« Horizontal d'abord (le couloir), vertical ensuite (l'ascenseur) ».",
+      exercice:"Place B(4 ; -1). Est-il au-dessus ou en dessous de l'axe horizontal ?",
+      reponse:"En dessous, car son ordonnée est négative."},
+    {semester:'S2', title:"Proportionnalité",
+      essentiel:"Deux grandeurs sont proportionnelles si l'on passe de l'une à l'autre en multipliant toujours par le même nombre.",
+      cours:"Produit en croix : si a/b = c/d, alors a×d = b×c. Exemple : 200 g de farine → 4 parts ; pour 6 parts : 200/4 = x/6 → x = (200×6)/4 = 300 g.",
+      piege:"Appliquer la règle de trois à des grandeurs qui ne sont pas proportionnelles (âge et taille, par exemple).",
+      astuce:"Demande-toi : « si je double une grandeur, l'autre double-t-elle aussi ? » Si oui, c'est proportionnel.",
+      exercice:"3 stylos coûtent 15 DH. Combien coûtent 5 stylos ?",
+      reponse:"25 DH."},
+    {semester:'S2', title:"Statistiques",
+      essentiel:"Les statistiques organisent et résument des données chiffrées recueillies sur un groupe.",
+      cours:"Effectif = nombre de fois qu'une valeur apparaît. Fréquence = effectif ÷ effectif total (souvent en %). La somme des fréquences vaut toujours 1 (ou 100%).",
+      piege:"Confondre effectif (nombre brut) et fréquence (proportion du total).",
+      astuce:"La fréquence répond à « quelle part du total ? », jamais à « combien, en nombre entier ? ».",
+      exercice:"Classe de 25 élèves, 10 pratiquent le football. Fréquence en % ?",
+      reponse:"10/25 = 0,4 = 40%."},
+  ]
+};
+
+let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null };
+
+function subj(key){ return SUBJECTS.find(s=>s.key===key) || {label:key,color:'#999'}; }
+function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function fmtDateLong(iso){ const d = new Date(iso+'T00:00:00'); return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'}); }
+function fmtDayShort(iso){ const d = new Date(iso+'T00:00:00'); return d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'}); }
+function weekDates(){
+  const d = new Date(); const day = (d.getDay()+6)%7;
+  const monday = new Date(d); monday.setDate(d.getDate()-day);
+  const out=[]; for(let i=0;i<7;i++){ const x=new Date(monday); x.setDate(monday.getDate()+i); out.push(x.toISOString().slice(0,10)); }
+  return out;
+}
+function uid(){ return 'id_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function chaptersFor(key){ return Array.isArray(state.resources[key]) ? state.resources[key] : []; }
+
+/* ---------- Stockage : compatible avec l'environnement Claude (window.storage) ----------
+   ET avec un navigateur normal / GitHub Pages (localStorage), pour que les données
+   soient VRAIMENT conservées sur l'appareil d'une fois à l'autre. */
+const LS_PREFIX = 'mon-cahier-1ac:';
+async function storageGet(key){
+  if(window.storage && typeof window.storage.get === 'function'){
+    try{ const r = await window.storage.get(key); if(r && r.value!=null) return r.value; }catch(e){}
+  }
+  try{ return localStorage.getItem(LS_PREFIX+key); }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  let okViaShim = false;
+  if(window.storage && typeof window.storage.set === 'function'){
+    try{ await window.storage.set(key, value); okViaShim = true; }catch(e){}
+  }
+  try{ localStorage.setItem(LS_PREFIX+key, value); }catch(e){ if(!okViaShim) console.error(e); }
+}
+
+async function loadState(){
+  try{ const v = await storageGet('tasks'); state.tasks = v ? JSON.parse(v) : []; }catch(e){ state.tasks = []; }
+  try{ const v = await storageGet('resources'); state.resources = v ? JSON.parse(v) : {}; }catch(e){ state.resources = {}; }
+  try{ const v = await storageGet('moods'); state.moods = v ? JSON.parse(v) : {}; }catch(e){ state.moods = {}; }
+}
+async function saveTasks(){ try{ await storageSet('tasks', JSON.stringify(state.tasks)); }catch(e){ console.error(e); } }
+async function saveResources(){ try{ await storageSet('resources', JSON.stringify(state.resources)); }catch(e){ console.error(e); } }
+async function saveMoods(){ try{ await storageSet('moods', JSON.stringify(state.moods)); }catch(e){ console.error(e); } }
+
+function shell(){
+  return `
+    <div class="topbar">
+      <div class="brand"><span class="title">Mon Cahier</span><span class="subtitle">1AC</span></div>
+      <div class="mode-switch">
+        <button class="mode-btn ${state.mode==='eleve'?'active':''}" data-mode="eleve">Élève</button>
+        <button class="mode-btn ${state.mode==='parent'?'active':''}" data-mode="parent">Parent</button>
+      </div>
+    </div>
+    <nav class="tabs">
+      ${(state.mode==='eleve'
+        ? [['today',"Aujourd'hui"],['week','Cette semaine'],['subjects','Mes matières']]
+        : [['add','Ajouter'],['tasks','Toutes les tâches'],['resources','Ressources']]
+      ).map(([v,l])=>`<button class="tab ${state.view===v?'active':''}" data-view="${v}">${l}</button>`).join('')}
+    </nav>
+    <main class="page" id="page"></main>
+    <footer class="foot">Cahier personnel — les données restent enregistrées sur cet appareil.</footer>
+  `;
+}
+
+function renderPage(){
+  const page = document.getElementById('page');
+  if(!page) return;
+  if(state.mode==='eleve'){
+    if(state.view==='today') page.innerHTML = viewToday();
+    else if(state.view==='week') page.innerHTML = viewWeek();
+    else page.innerHTML = viewSubjectsEleve();
+  } else {
+    if(state.view==='add') page.innerHTML = viewAdd();
+    else if(state.view==='tasks') page.innerHTML = viewAllTasks();
+    else page.innerHTML = viewResourcesParent();
+  }
+  bindPageEvents();
+}
+
+/* ---------- ÉLÈVE : Aujourd'hui ---------- */
+function viewToday(){
+  const iso = todayISO();
+  const tasks = state.tasks.filter(t=>t.date===iso).sort((a,b)=> (a.done?1:0)-(b.done?1:0));
+  const next = tasks.find(t=>!t.done);
+  const mood = state.moods[iso];
+  let html = `<h2 class="section-title">Aujourd'hui, ${fmtDateLong(iso)}</h2>`;
+  if(next){
+    html += `<div class="card next-card"><div class="eyebrow">Prochaine étape</div>
+      <div class="task-title">${esc(next.title)}</div>
+      <div class="task-sub">${esc(subj(next.subject).label)} ${next.minutes?`· ${next.minutes} min`:''}</div></div>`;
+  }
+  if(tasks.length===0){
+    html += `<div class="empty"><span class="hand">Rien de prévu aujourd'hui !</span>Demande à un parent d'ajouter une tâche si besoin.</div>`;
+  } else { html += tasks.map(t=>taskRow(t)).join(''); }
+  html += `<div class="mood-row"><span class="muted" style="margin:0;">Ma journée :</span>
+    ${MOODS.map(m=>`<button class="mood-btn ${mood===m?'selected':''}" data-mood="${m}">${m}</button>`).join('')}</div>`;
+  return html;
+}
+function taskRow(t){
+  const s = subj(t.subject);
+  return `<div class="task-row ${t.done?'done':''}" data-id="${t.id}">
+    <button class="checkbox ${t.done?'checked':''}" data-action="toggle" data-id="${t.id}">${t.done?'✓':''}</button>
+    <span class="dot" style="background:${s.color}"></span>
+    <div class="task-main"><div class="task-title">${esc(t.title)}</div>
+      <div class="task-sub">${esc(s.label)}${t.desc? ' · '+esc(t.desc): ''}</div></div>
+    ${t.minutes?`<span class="chip">${t.minutes} min</span>`:''}
+    <span class="chip" style="background:${s.color}22;color:${s.color}">${typeLabel(t.type)}</span></div>`;
+}
+function typeLabel(k){ return (TYPES.find(x=>x.key===k)||{label:k}).label; }
+
+/* ---------- ÉLÈVE : Semaine ---------- */
+function viewWeek(){
+  const dates = weekDates(); const iso = todayISO();
+  let html = `<h2 class="section-title">Cette semaine</h2><p class="muted">Vue d'ensemble, du lundi au dimanche.</p><div class="week-grid">`;
+  for(const d of dates){
+    const dayTasks = state.tasks.filter(t=>t.date===d);
+    html += `<div class="day-col"><div class="day-head ${d===iso?'today':''}">${fmtDayShort(d)}</div>
+      ${dayTasks.length===0 ? `<div style="font-size:12px;color:var(--ink-soft);">—</div>` :
+        dayTasks.map(t=>`<div class="mini-task ${t.done?'done':''}">${esc(t.title)}</div>`).join('')}</div>`;
+  }
+  return html + `</div>`;
+}
+
+/* ---------- ÉLÈVE : Mes matières ---------- */
+function viewSubjectsEleve(){
+  let html = `<h2 class="section-title">Mes matières</h2><p class="muted">Clique sur une matière pour voir les fiches de cours.</p>`;
+  html += `<div class="subject-grid">` + SUBJECTS.map(s=>{
+    const n = chaptersFor(s.key).length;
+    return `<button class="subject-card ${state.openSubjectEleve===s.key?'active-subject':''}" style="background:${s.color}" data-subject="${s.key}">
+      <div class="subject-name">${esc(s.label)}</div>
+      <div class="subject-hint">${n ? n+' fiche'+(n>1?'s':'')+' de cours' : 'Pas encore de fiches'}</div>
+    </button>`;
+  }).join('') + `</div><div id="subject-detail">${state.openSubjectEleve ? subjectDetailHTML(state.openSubjectEleve) : ''}</div>`;
+  return html;
+}
+function subjectDetailHTML(key){
+  const s = subj(key); const chapters = chaptersFor(key);
+  if(chapters.length===0){
+    return `<div class="empty" style="margin-top:16px;"><span class="hand">Pas encore de fiches pour ${esc(s.label)}</span>Un parent peut en ajouter depuis l'espace Parent.</div>`;
+  }
+  const s1 = chapters.filter(c=>c.semester!=='S2');
+  const s2 = chapters.filter(c=>c.semester==='S2');
+  const groupHTML = (label, list) => list.length===0 ? '' : `
+    <div class="sommaire-group-label">${label}</div>
+    <div class="sommaire-list">` + list.map(c=>sommaireRowHTML(c,s)).join('') + `</div>`;
+  return `<div class="sommaire" style="margin-top:16px;">` + groupHTML('Semestre 1', s1) + groupHTML('Semestre 2', s2) + `</div>`;
+}
+function sommaireRowHTML(c,s){
+  const isOpen = state.openChapterId === c.id;
+  return `<div class="sommaire-item ${isOpen?'open':''}">
+    <button class="sommaire-row" data-chapter-toggle="${c.id}">
+      <span class="sommaire-dot" style="background:${s.color}"></span>
+      <span class="sommaire-title">${esc(c.title)}</span>
+      <span class="sommaire-chevron">${isOpen?'▲':'▼'}</span>
+    </button>
+    ${isOpen ? `<div class="sommaire-content">${chapterCardHTML(c,s,true)}</div>` : ''}
+  </div>`;
+}
+function chapterCardHTML(c,s,compact){
+  const head = compact ? '' : `<div class="chapter-head" style="background:${s.color}">
+      <div class="chapter-eyebrow">${esc(s.label)} · Semestre ${c.semester==='S2'?'2':'1'}</div>
+      <div class="chapter-title">${esc(c.title)}</div>
+    </div>`;
+  return `<div class="chapter-card ${compact?'compact':''}">
+    ${head}
+    <div class="chapter-body">
+      ${c.essentiel? `<div class="chapter-essentiel">🎯 ${esc(c.essentiel)}</div>`:''}
+      ${c.cours? `<div class="chapter-section"><div class="chapter-section-label">📖 Le cours</div><div class="chapter-text">${esc(c.cours)}</div></div>`:''}
+      ${c.piege? `<div class="chapter-section box-piege"><div class="chapter-section-label">⚠️ Piège fréquent</div><div class="chapter-text">${esc(c.piege)}</div></div>`:''}
+      ${c.astuce? `<div class="chapter-section box-astuce"><div class="chapter-section-label">🧠 Astuce</div><div class="chapter-text">${esc(c.astuce)}</div></div>`:''}
+      ${c.exercice? `<div class="chapter-section box-exercice">
+          <div class="chapter-section-label">✍️ À toi de jouer</div>
+          <div class="chapter-text">${esc(c.exercice)}</div>
+          ${c.reponse? `<button class="btn-small reveal-btn" data-reveal="${c.id}">Voir la réponse</button>
+          <div class="reveal-answer" id="answer-${c.id}">${esc(c.reponse)}</div>`:''}
+        </div>`:''}
+    </div>
+  </div>`;
+}
+
+/* ---------- PARENT : Ajouter tâche ---------- */
+function viewAdd(){
+  return `<h2 class="section-title">Ajouter une tâche</h2>
+  <p class="muted">Elle apparaîtra dans l'espace Élève, à la date choisie.</p>
+  <div class="card"><form id="add-form">
+    <div class="form-grid">
+      <div><label>Matière</label><select name="subject">${SUBJECTS.map(s=>`<option value="${s.key}">${esc(s.label)}</option>`).join('')}</select></div>
+      <div><label>Type</label><select name="type">${TYPES.map(t=>`<option value="${t.key}">${esc(t.label)}</option>`).join('')}</select></div>
+    </div>
+    <label>Titre</label><input name="title" required placeholder="Ex. Exercices p.24, n°3 à 6">
+    <label>Détail (optionnel)</label><textarea name="desc" placeholder="Précisions, consignes, lien avec le cours…"></textarea>
+    <div class="form-grid">
+      <div><label>Date</label><input type="date" name="date" value="${todayISO()}"></div>
+      <div><label>Temps estimé (minutes)</label><input type="number" name="minutes" min="0" step="5" placeholder="30"></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter au cahier</button>
+  </form></div>`;
+}
+
+/* ---------- PARENT : Toutes les tâches ---------- */
+function viewAllTasks(){
+  const filtered = state.subjectFilter==='all' ? state.tasks : state.tasks.filter(t=>t.subject===state.subjectFilter);
+  const sorted = [...filtered].sort((a,b)=> a.date<b.date?1:-1);
+  const doneCount = state.tasks.filter(t=>t.done).length;
+  let html = `<h2 class="section-title">Toutes les tâches</h2>
+  <p class="muted">${state.tasks.length} tâche(s) au total · ${doneCount} terminée(s)</p>
+  <div class="filters"><select class="filter-select" id="subject-filter">
+    <option value="all">Toutes les matières</option>
+    ${SUBJECTS.map(s=>`<option value="${s.key}" ${state.subjectFilter===s.key?'selected':''}>${esc(s.label)}</option>`).join('')}
+  </select></div>`;
+  if(sorted.length===0){
+    html += `<div class="empty"><span class="hand">Aucune tâche pour l'instant</span>Utilise l'onglet « Ajouter » pour commencer.</div>`;
+  } else {
+    html += sorted.map(t=>{
+      const s = subj(t.subject);
+      return `<div class="task-row ${t.done?'done':''}"><span class="dot" style="background:${s.color}"></span>
+        <div class="task-main"><div class="task-title">${esc(t.title)}</div>
+        <div class="task-sub">${esc(s.label)} · ${fmtDayShort(t.date)}${t.desc? ' · '+esc(t.desc): ''}</div></div>
+        <span class="chip">${typeLabel(t.type)}</span>
+        <button class="btn-danger" data-action="delete" data-id="${t.id}">Supprimer</button></div>`;
+    }).join('');
+  }
+  return html;
+}
+
+/* ---------- PARENT : Ressources (fiches par matière) ---------- */
+function viewResourcesParent(){
+  const activeKey = state.parentResourceSubject;
+  const activeSubj = subj(activeKey);
+  const chapters = chaptersFor(activeKey);
+  const hasSeed = !!SEED[activeKey];
+
+  let html = `<h2 class="section-title">Ressources — fiches de cours</h2>
+  <p class="muted">Choisis une matière, ajoute des fiches (une par chapitre). Elles s'affichent en cartes mises en forme côté Élève.</p>
+  <div class="filters">
+    <select class="filter-select" id="parent-subject-select">
+      ${SUBJECTS.map(s=>`<option value="${s.key}" ${activeKey===s.key?'selected':''}>${esc(s.label)} (${chaptersFor(s.key).length})</option>`).join('')}
+    </select>
+  </div>`;
+
+  if(hasSeed){
+    html += `<div class="seed-banner">
+      <p><strong>${SEED[activeKey].length} fiches prêtes à l'emploi</strong> existent déjà pour ${esc(activeSubj.label)} (programme officiel 1AC).</p>
+      <button class="btn btn-secondary" id="load-seed" data-subject="${activeKey}">Charger ces fiches</button>
+    </div>`;
+  }
+
+  html += `<div class="chapter-editor">
+    <h2 class="section-title" style="font-size:22px;">${state.editingChapterId? 'Modifier la fiche' : 'Ajouter une fiche'}</h2>
+    <form id="chapter-form">
+      <input type="hidden" name="id" value="${state.editingChapterId||''}">
+      <div class="form-grid">
+        <div><label>Titre du chapitre</label><input name="title" required placeholder="Ex. Les fractions"></div>
+        <div><label>Semestre</label><select name="semester"><option value="S1">Semestre 1</option><option value="S2">Semestre 2</option></select></div>
+      </div>
+      <label>L'essentiel (1-2 phrases)</label><textarea name="essentiel" style="min-height:50px;" placeholder="L'idée clé à retenir en une phrase"></textarea>
+      <label>Le cours</label><textarea name="cours" placeholder="Explication claire + exemple résolu"></textarea>
+      <label>Piège fréquent</label><textarea name="piege" style="min-height:50px;" placeholder="L'erreur typique à cet âge"></textarea>
+      <label>Astuce</label><textarea name="astuce" style="min-height:50px;" placeholder="Moyen mnémotechnique"></textarea>
+      <label>Exercice</label><textarea name="exercice" style="min-height:50px;" placeholder="Un petit exercice"></textarea>
+      <label>Réponse</label><textarea name="reponse" style="min-height:40px;" placeholder="La réponse, pour qu'elle se corrige seule"></textarea>
+      <button type="submit" class="btn btn-primary">${state.editingChapterId? 'Enregistrer les modifications' : 'Ajouter la fiche'}</button>
+      ${state.editingChapterId? `<button type="button" class="btn-ghost" id="cancel-edit">Annuler la modification</button>` : ''}
+    </form>
+  </div>`;
+
+  if(chapters.length===0){
+    html += `<div class="empty"><span class="hand">Aucune fiche pour ${esc(activeSubj.label)}</span>Ajoute-en une ci-dessus, ou charge les fiches prêtes à l'emploi si disponibles.</div>`;
+  } else {
+    html += chapters.map(c=>`<div class="chapter-mini-row">
+      <span class="chapter-mini-title"><span class="subj-tag" style="background:${activeSubj.color}">S${c.semester==='S2'?'2':'1'}</span>${esc(c.title)}</span>
+      <span class="chapter-mini-actions">
+        <button class="btn-small" data-action="edit-chapter" data-id="${c.id}">Modifier</button>
+        <button class="btn-danger" data-action="delete-chapter" data-id="${c.id}">Supprimer</button>
+      </span></div>`).join('');
+  }
+
+  html += `<div style="margin-top:26px;"><button class="btn-ghost" id="reset-data">Réinitialiser toutes les données</button></div>`;
+  return html;
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function bindPageEvents(){
+  const page = document.getElementById('page');
+  if(!page) return;
+
+  page.querySelectorAll('[data-action="toggle"]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const t = state.tasks.find(x=>x.id===btn.dataset.id);
+      if(t){ t.done = !t.done; await saveTasks(); renderPage(); }
+    });
+  });
+  page.querySelectorAll('[data-action="delete"]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      state.tasks = state.tasks.filter(x=>x.id!==btn.dataset.id);
+      await saveTasks(); renderPage();
+    });
+  });
+  page.querySelectorAll('.mood-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{ state.moods[todayISO()] = btn.dataset.mood; await saveMoods(); renderPage(); });
+  });
+  page.querySelectorAll('.subject-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      state.openSubjectEleve = state.openSubjectEleve===card.dataset.subject ? null : card.dataset.subject;
+      state.openChapterId = null;
+      renderPage();
+    });
+  });
+  page.querySelectorAll('[data-chapter-toggle]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.chapterToggle;
+      state.openChapterId = state.openChapterId===id ? null : id;
+      renderPage();
+      const el = document.querySelector(`[data-chapter-toggle="${id}"]`);
+      if(el && state.openChapterId===id) el.scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+  page.querySelectorAll('[data-reveal]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const el = document.getElementById('answer-'+btn.dataset.reveal);
+      if(el){ el.classList.toggle('shown'); btn.textContent = el.classList.contains('shown') ? 'Cacher la réponse' : 'Voir la réponse'; }
+    });
+  });
+
+  const form = document.getElementById('add-form');
+  if(form){
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(form);
+      const task = {
+        id: uid(), subject: fd.get('subject'), type: fd.get('type'),
+        title: fd.get('title').trim(), desc: (fd.get('desc')||'').trim(),
+        date: fd.get('date') || todayISO(),
+        minutes: fd.get('minutes') ? parseInt(fd.get('minutes')) : null, done: false,
+      };
+      if(!task.title) return;
+      state.tasks.push(task); await saveTasks();
+      form.reset(); form.querySelector('[name="date"]').value = todayISO();
+      alertBanner('Tâche ajoutée ✓');
+    });
+  }
+
+  const filter = document.getElementById('subject-filter');
+  if(filter){ filter.addEventListener('change', ()=>{ state.subjectFilter = filter.value; renderPage(); }); }
+
+  const parentSubjSelect = document.getElementById('parent-subject-select');
+  if(parentSubjSelect){
+    parentSubjSelect.addEventListener('change', ()=>{
+      state.parentResourceSubject = parentSubjSelect.value; state.editingChapterId = null; renderPage();
+    });
+  }
+
+  const loadSeedBtn = document.getElementById('load-seed');
+  if(loadSeedBtn){
+    loadSeedBtn.addEventListener('click', async ()=>{
+      const key = loadSeedBtn.dataset.subject;
+      const existing = chaptersFor(key);
+      if(existing.length>0 && !confirm('Des fiches existent déjà pour cette matière. Les remplacer par les fiches prédéfinies ?')) return;
+      state.resources[key] = SEED[key].map(c=>({...c, id: uid()}));
+      await saveResources(); renderPage(); alertBanner('Fiches chargées ✓');
+    });
+  }
+
+  const chapterForm = document.getElementById('chapter-form');
+  if(chapterForm){
+    chapterForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(chapterForm);
+      const key = state.parentResourceSubject;
+      if(!Array.isArray(state.resources[key])) state.resources[key] = [];
+      const data = {
+        title: (fd.get('title')||'').trim(), semester: fd.get('semester'),
+        essentiel:(fd.get('essentiel')||'').trim(), cours:(fd.get('cours')||'').trim(),
+        piege:(fd.get('piege')||'').trim(), astuce:(fd.get('astuce')||'').trim(),
+        exercice:(fd.get('exercice')||'').trim(), reponse:(fd.get('reponse')||'').trim(),
+      };
+      if(!data.title) return;
+      const editId = fd.get('id');
+      if(editId){
+        const idx = state.resources[key].findIndex(c=>c.id===editId);
+        if(idx>=0) state.resources[key][idx] = {...state.resources[key][idx], ...data};
+      } else {
+        state.resources[key].push({id: uid(), ...data});
+      }
+      state.editingChapterId = null;
+      await saveResources(); renderPage(); alertBanner('Fiche enregistrée ✓');
+    });
+  }
+  const cancelEdit = document.getElementById('cancel-edit');
+  if(cancelEdit){ cancelEdit.addEventListener('click', ()=>{ state.editingChapterId = null; renderPage(); }); }
+
+  page.querySelectorAll('[data-action="edit-chapter"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.editingChapterId = btn.dataset.id; renderPage();
+      setTimeout(()=>{
+        const key = state.parentResourceSubject;
+        const c = chaptersFor(key).find(x=>x.id===btn.dataset.id);
+        const f = document.getElementById('chapter-form');
+        if(c && f){
+          f.title.value=c.title||''; f.semester.value=c.semester||'S1'; f.essentiel.value=c.essentiel||'';
+          f.cours.value=c.cours||''; f.piege.value=c.piege||''; f.astuce.value=c.astuce||'';
+          f.exercice.value=c.exercice||''; f.reponse.value=c.reponse||'';
+          f.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      },0);
+    });
+  });
+  page.querySelectorAll('[data-action="delete-chapter"]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const key = state.parentResourceSubject;
+      state.resources[key] = chaptersFor(key).filter(c=>c.id!==btn.dataset.id);
+      await saveResources(); renderPage();
+    });
+  });
+
+  const resetBtn = document.getElementById('reset-data');
+  if(resetBtn){
+    resetBtn.addEventListener('click', async ()=>{
+      if(confirm('Supprimer toutes les tâches, ressources et humeurs enregistrées ? Cette action est irréversible.')){
+        state.tasks = []; state.resources = {}; state.moods = {};
+        await saveTasks(); await saveResources(); await saveMoods();
+        renderPage();
+      }
+    });
+  }
+}
+
+function alertBanner(msg){
+  const b = document.createElement('div'); b.textContent = msg;
+  b.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2F5233;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,0.2);z-index:99;';
+  document.body.appendChild(b); setTimeout(()=>b.remove(), 1800);
+}
+
+function bindShellEvents(){
+  document.querySelectorAll('.mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.mode = btn.dataset.mode; state.view = state.mode==='eleve' ? 'today' : 'add'; render();
+    });
+  });
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.view = btn.dataset.view; render(); });
+  });
+}
+
+function render(){
+  document.getElementById('app').innerHTML = shell();
+  bindShellEvents(); renderPage();
+}
+
+(async function init(){ await loadState(); render(); })();
+</script>
+</body>
+</html>
