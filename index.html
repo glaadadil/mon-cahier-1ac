@@ -1058,7 +1058,8 @@ const SEED = {
   ],
 };
 
-let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null };
+let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
+  apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false };
 
 function subj(key){ return SUBJECTS.find(s=>s.key===key) || {label:key,color:'#999'}; }
 function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10); }
@@ -1095,6 +1096,7 @@ async function loadState(){
   try{ const v = await storageGet('tasks'); state.tasks = v ? JSON.parse(v) : []; }catch(e){ state.tasks = []; }
   try{ const v = await storageGet('resources'); state.resources = v ? JSON.parse(v) : {}; }catch(e){ state.resources = {}; }
   try{ const v = await storageGet('moods'); state.moods = v ? JSON.parse(v) : {}; }catch(e){ state.moods = {}; }
+  try{ const v = await storageGet('apiKey'); state.apiKey = v || null; }catch(e){ state.apiKey = null; }
 }
 async function saveTasks(){ try{ await storageSet('tasks', JSON.stringify(state.tasks)); }catch(e){ console.error(e); } }
 async function saveResources(){ try{ await storageSet('resources', JSON.stringify(state.resources)); }catch(e){ console.error(e); } }
@@ -1112,7 +1114,7 @@ function shell(){
     <nav class="tabs">
       ${(state.mode==='eleve'
         ? [['today',"Aujourd'hui"],['week','Cette semaine'],['subjects','Mes matières']]
-        : [['add','Ajouter'],['tasks','Toutes les tâches'],['resources','Ressources']]
+        : [['add','Ajouter'],['tasks','Toutes les tâches'],['resources','Ressources'],['generate','Générer (IA)']]
       ).map(([v,l])=>`<button class="tab ${state.view===v?'active':''}" data-view="${v}">${l}</button>`).join('')}
     </nav>
     <main class="page" id="page"></main>
@@ -1130,7 +1132,8 @@ function renderPage(){
   } else {
     if(state.view==='add') page.innerHTML = viewAdd();
     else if(state.view==='tasks') page.innerHTML = viewAllTasks();
-    else page.innerHTML = viewResourcesParent();
+    else if(state.view==='resources') page.innerHTML = viewResourcesParent();
+    else page.innerHTML = viewGenerate();
   }
   bindPageEvents();
 }
@@ -1338,6 +1341,83 @@ function viewResourcesParent(){
   return html;
 }
 
+/* ---------- PARENT : Générer un exercice avec l'IA ---------- */
+function genLangFor(key){
+  if(key==='arabe' || key==='islamique' || key==='social') return 'arabe';
+  if(key==='anglais') return 'anglais';
+  return 'français';
+}
+
+function viewGenerate(){
+  if(!SUBJECTS.find(s=>s.key===state.genSubject)) state.genSubject = SUBJECTS[0].key;
+  const genChapters = chaptersFor(state.genSubject);
+  if(state.genChapterId && !genChapters.find(c=>c.id===state.genChapterId)) state.genChapterId = null;
+  if(!state.genChapterId && genChapters.length>0) state.genChapterId = genChapters[0].id;
+  const activeSubj = subj(state.genSubject);
+  const hasKey = !!state.apiKey;
+
+  let html = `<h2 class="section-title">Générer un exercice avec l'IA</h2>
+  <p class="muted">Crée un nouvel exercice sur mesure (avec sa correction) pour une leçon précise, grâce à une intelligence artificielle gratuite (Google Gemini).</p>
+
+  <div class="card" id="api-key-card">
+    <label>Clé API Gemini (gratuite)</label>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <input type="password" id="api-key-input" placeholder="Colle ta clé ici" style="flex:1; min-width:200px;" value="${hasKey? state.apiKey : ''}">
+      <button class="btn btn-secondary" id="save-api-key">Enregistrer</button>
+      ${hasKey? `<button class="btn-ghost" id="clear-api-key">Supprimer la clé</button>` : ''}
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:8px;">
+      ${hasKey? '✅ Clé enregistrée sur cet appareil.' : '⚠️ Aucune clé enregistrée pour l\'instant.'}
+      Obtiens une clé gratuite en 2 minutes sur <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> (compte Google, sans carte bancaire), puis colle-la ici. Elle reste uniquement sur cet appareil, dans ce navigateur.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="form-grid">
+      <div><label>Matière</label><select id="gen-subject">${SUBJECTS.map(s=>`<option value="${s.key}" ${state.genSubject===s.key?'selected':''}>${esc(s.label)} (${chaptersFor(s.key).length})</option>`).join('')}</select></div>
+      <div><label>Leçon</label><select id="gen-chapter" ${genChapters.length===0?'disabled':''}>
+        ${genChapters.length===0? `<option>Aucune fiche chargée</option>` : genChapters.map(c=>`<option value="${c.id}" ${state.genChapterId===c.id?'selected':''}>${esc(c.title)}</option>`).join('')}
+      </select></div>
+    </div>
+    <label>Niveau de difficulté</label>
+    <select id="gen-difficulty">
+      <option value="facile" ${state.genDifficulty==='facile'?'selected':''}>Facile</option>
+      <option value="moyen" ${state.genDifficulty==='moyen'?'selected':''}>Moyen</option>
+      <option value="difficile" ${state.genDifficulty==='difficile'?'selected':''}>Difficile</option>
+    </select>
+    ${genChapters.length===0? `<p class="muted" style="margin-top:10px;">Charge d'abord des fiches pour ${esc(activeSubj.label)} dans l'onglet « Ressources ».</p>` : ''}
+    <button class="btn btn-primary" id="gen-btn" style="margin-top:14px;" ${(!hasKey || genChapters.length===0 || state.genLoading)?'disabled':''}>${state.genLoading? '✨ Génération en cours…' : '✨ Générer un exercice'}</button>
+    ${!hasKey? `<p class="muted" style="margin-top:8px;">Ajoute une clé API ci-dessus pour activer la génération.</p>` : ''}
+  </div>`;
+
+  if(state.genError){
+    html += `<div class="seed-banner" style="background:#FCE8E6;"><p><strong>⚠️</strong> ${esc(state.genError)}</p></div>`;
+  }
+
+  if(state.genResult){
+    html += `<div class="chapter-card" style="margin-top:16px;">
+      <div class="chapter-head" style="background:${activeSubj.color}">
+        <div class="chapter-eyebrow">${esc(activeSubj.label)} · Exercice généré par l'IA</div>
+        <div class="chapter-title">${esc(state.genResult.chapterTitle || '')}</div>
+      </div>
+      <div class="chapter-body">
+        <div class="chapter-section box-exercice">
+          <div class="chapter-section-label">✍️ Énoncé</div>
+          <div class="chapter-text">${esc(state.genResult.enonce)}</div>
+          <button class="btn-small reveal-btn" data-reveal="gen-answer">Voir la réponse</button>
+          <div class="reveal-answer" id="answer-gen-answer">${esc(state.genResult.reponse)}</div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="gen-again" ${state.genLoading?'disabled':''}>Générer un autre</button>
+          <button class="btn btn-secondary" id="gen-add-task">Ajouter comme devoir</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return html;
+}
+
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function bindPageEvents(){
@@ -1482,6 +1562,130 @@ function bindPageEvents(){
         renderPage();
       }
     });
+  }
+
+  const saveKeyBtn = document.getElementById('save-api-key');
+  if(saveKeyBtn){
+    saveKeyBtn.addEventListener('click', async ()=>{
+      const input = document.getElementById('api-key-input');
+      const val = (input.value||'').trim();
+      if(!val){ alertBanner('Colle une clé avant d\'enregistrer'); return; }
+      state.apiKey = val;
+      try{ await storageSet('apiKey', val); }catch(e){ console.error(e); }
+      state.genError = null;
+      renderPage(); alertBanner('Clé enregistrée ✓');
+    });
+  }
+  const clearKeyBtn = document.getElementById('clear-api-key');
+  if(clearKeyBtn){
+    clearKeyBtn.addEventListener('click', async ()=>{
+      if(!confirm('Supprimer la clé API enregistrée sur cet appareil ?')) return;
+      state.apiKey = null;
+      try{ await storageSet('apiKey', ''); }catch(e){ console.error(e); }
+      renderPage();
+    });
+  }
+
+  const genSubjectSelect = document.getElementById('gen-subject');
+  if(genSubjectSelect){
+    genSubjectSelect.addEventListener('change', ()=>{
+      state.genSubject = genSubjectSelect.value; state.genChapterId = null;
+      state.genResult = null; state.genError = null;
+      renderPage();
+    });
+  }
+  const genChapterSelect = document.getElementById('gen-chapter');
+  if(genChapterSelect){
+    genChapterSelect.addEventListener('change', ()=>{
+      state.genChapterId = genChapterSelect.value;
+      renderPage();
+    });
+  }
+  const genDifficultySelect = document.getElementById('gen-difficulty');
+  if(genDifficultySelect){
+    genDifficultySelect.addEventListener('change', ()=>{
+      state.genDifficulty = genDifficultySelect.value;
+    });
+  }
+  const genBtn = document.getElementById('gen-btn');
+  if(genBtn){ genBtn.addEventListener('click', ()=> generateExercise()); }
+  const genAgainBtn = document.getElementById('gen-again');
+  if(genAgainBtn){ genAgainBtn.addEventListener('click', ()=> generateExercise()); }
+  const genAddTaskBtn = document.getElementById('gen-add-task');
+  if(genAddTaskBtn){
+    genAddTaskBtn.addEventListener('click', async ()=>{
+      if(!state.genResult) return;
+      const task = {
+        id: uid(), subject: state.genSubject, type: 'exercice',
+        title: `Exercice généré : ${state.genResult.chapterTitle||''}`.trim(),
+        desc: `Énoncé :\n${state.genResult.enonce}\n\nCorrection :\n${state.genResult.reponse}`,
+        date: todayISO(), minutes: null, done: false,
+      };
+      state.tasks.push(task); await saveTasks();
+      alertBanner('Ajouté aux tâches ✓');
+    });
+  }
+}
+
+async function callGemini(promptText, apiKey){
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: { enonce: { type: 'STRING' }, reponse: { type: 'STRING' } },
+          required: ['enonce', 'reponse']
+        },
+        temperature: 0.9,
+      }
+    })
+  });
+  if(!resp.ok){
+    if(resp.status===400 || resp.status===401 || resp.status===403) throw new Error("Clé API invalide ou refusée. Vérifie qu'elle est bien copiée depuis aistudio.google.com/apikey.");
+    if(resp.status===429) throw new Error("Trop de demandes pour l'instant (quota gratuit atteint). Réessaie dans quelques minutes.");
+    throw new Error(`Erreur du service IA (code ${resp.status}). Réessaie plus tard.`);
+  }
+  const data = await resp.json();
+  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+  if(!text) throw new Error("Réponse vide de l'IA, réessaie.");
+  let parsed;
+  try{ parsed = JSON.parse(text); }catch(e){ throw new Error("Réponse de l'IA illisible, réessaie."); }
+  if(!parsed.enonce || !parsed.reponse) throw new Error("Réponse de l'IA incomplète, réessaie.");
+  return parsed;
+}
+
+async function generateExercise(){
+  if(!state.apiKey) return;
+  const chapter = chaptersFor(state.genSubject).find(c=>c.id===state.genChapterId);
+  if(!chapter) return;
+  const s = subj(state.genSubject);
+  const langue = genLangFor(state.genSubject);
+  const diffLabel = {facile:'facile', moyen:'moyen', difficile:'difficile'}[state.genDifficulty] || 'moyen';
+
+  const promptText = `Tu es un professeur bienveillant pour un·e élève marocain·e de 11 ans en 1ère année collège (6ème).
+Matière : ${s.label}
+Leçon : ${chapter.title}
+Rappel du cours (à utiliser comme contexte, ne pas recopier) : ${chapter.essentiel||''} ${chapter.cours||''}
+Niveau de difficulté souhaité : ${diffLabel}
+
+Génère UN NOUVEL exercice original (différent de l'exemple du cours) adapté à cette leçon et à ce niveau de difficulté, avec sa correction complète, claire et exacte.
+Rédige l'énoncé et la correction entièrement en ${langue}, dans un style simple et adapté à un enfant de 11 ans.
+Réponds uniquement avec un objet JSON valide contenant exactement deux clés : "enonce" et "reponse". Aucun texte en dehors du JSON.`;
+
+  state.genLoading = true; state.genError = null; renderPage();
+  try{
+    const result = await callGemini(promptText, state.apiKey);
+    state.genResult = { enonce: result.enonce, reponse: result.reponse, chapterTitle: chapter.title };
+  }catch(err){
+    state.genError = err && err.message ? err.message : "Une erreur est survenue, réessaie.";
+    state.genResult = null;
+  }finally{
+    state.genLoading = false; renderPage();
   }
 }
 
