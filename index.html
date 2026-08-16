@@ -173,6 +173,19 @@
   .chapter-mini-actions{ display:flex; gap:6px; }
   .seed-banner{ background:#EAF4F8; border:1.5px dashed var(--essentiel); border-radius:12px; padding:14px 16px; margin-bottom:16px; }
   .seed-banner p{ margin:0 0 10px; font-size:13.5px; color:var(--ink); }
+
+  /* ---- Écran de connexion / mots de passe ---- */
+  .auth-wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background: linear-gradient(180deg, var(--chalkboard), var(--chalkboard-dark)); }
+  .auth-card{ background:var(--card); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.25); padding:32px 28px; max-width:380px; width:100%; text-align:center; }
+  .auth-card .title{ font-family:'Caveat', cursive; font-size:34px; color:var(--chalkboard-dark); margin:0 0 4px; }
+  .auth-card .muted{ margin-bottom:22px; }
+  .role-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+  .role-btn{ border:2px solid var(--line); background:#fff; border-radius:14px; padding:20px 10px; cursor:pointer; font-family:'Nunito'; }
+  .role-btn:hover{ border-color:var(--gold); }
+  .role-emoji{ font-size:32px; display:block; margin-bottom:8px; }
+  .role-label{ font-weight:800; font-size:14.5px; color:var(--ink); }
+  .auth-error{ color:var(--marge); font-weight:700; font-size:13px; margin:10px 0 0; }
+  .auth-back{ margin-top:14px; }
 </style>
 </head>
 <body>
@@ -1059,7 +1072,8 @@ const SEED = {
 };
 
 let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
-  apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false };
+  apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false,
+  passwords:null, authenticated:false, authTarget:null, authError:null, pwSaveMsg:null };
 
 function subj(key){ return SUBJECTS.find(s=>s.key===key) || {label:key,color:'#999'}; }
 function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10); }
@@ -1097,7 +1111,9 @@ async function loadState(){
   try{ const v = await storageGet('resources'); state.resources = v ? JSON.parse(v) : {}; }catch(e){ state.resources = {}; }
   try{ const v = await storageGet('moods'); state.moods = v ? JSON.parse(v) : {}; }catch(e){ state.moods = {}; }
   try{ const v = await storageGet('apiKey'); state.apiKey = v || null; }catch(e){ state.apiKey = null; }
+  try{ const v = await storageGet('passwords'); state.passwords = v ? JSON.parse(v) : null; }catch(e){ state.passwords = null; }
 }
+async function savePasswords(){ try{ await storageSet('passwords', JSON.stringify(state.passwords)); }catch(e){ console.error(e); } }
 async function saveTasks(){ try{ await storageSet('tasks', JSON.stringify(state.tasks)); }catch(e){ console.error(e); } }
 async function saveResources(){ try{ await storageSet('resources', JSON.stringify(state.resources)); }catch(e){ console.error(e); } }
 async function saveMoods(){ try{ await storageSet('moods', JSON.stringify(state.moods)); }catch(e){ console.error(e); } }
@@ -1106,9 +1122,12 @@ function shell(){
   return `
     <div class="topbar">
       <div class="brand"><span class="title">Mon Cahier</span><span class="subtitle">1AC</span></div>
-      <div class="mode-switch">
-        <button class="mode-btn ${state.mode==='eleve'?'active':''}" data-mode="eleve">Élève</button>
-        <button class="mode-btn ${state.mode==='parent'?'active':''}" data-mode="parent">Parent</button>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="mode-switch">
+          <button class="mode-btn ${state.mode==='eleve'?'active':''}" data-mode="eleve">Élève</button>
+          <button class="mode-btn ${state.mode==='parent'?'active':''}" data-mode="parent">Parent</button>
+        </div>
+        <button id="logout-btn" title="Verrouiller le cahier" style="background:transparent; border:1.5px solid rgba(255,255,255,0.35); color:var(--chalk-white); border-radius:999px; padding:8px 12px; font-weight:700; font-size:13px; cursor:pointer; font-family:'Nunito';">🔒</button>
       </div>
     </div>
     <nav class="tabs">
@@ -1337,7 +1356,21 @@ function viewResourcesParent(){
       </span></div>`).join('');
   }
 
-  html += `<div style="margin-top:26px;"><button class="btn-ghost" id="reset-data">Réinitialiser toutes les données</button></div>`;
+  html += `<div class="card" style="margin-top:22px;">
+    <h2 class="section-title" style="font-size:22px;">Sécurité</h2>
+    <p class="muted">Change les mots de passe des espaces Élève et Parent.</p>
+    <form id="password-form">
+      <div class="form-grid">
+        <div><label>Nouveau mot de passe Élève</label><input type="password" id="pw-eleve" placeholder="${state.passwords? '••••' : ''}"></div>
+        <div><label>Nouveau mot de passe Parent</label><input type="password" id="pw-parent" placeholder="${state.passwords? '••••' : ''}"></div>
+      </div>
+      <p class="muted" style="font-size:12px; margin:6px 0 0;">Laisse un champ vide pour ne pas changer ce mot de passe.</p>
+      ${state.pwSaveMsg? `<p style="color:#2F6E8C; font-weight:700; font-size:13px; margin-top:8px;">${esc(state.pwSaveMsg)}</p>` : ''}
+      <button type="submit" class="btn btn-secondary">Enregistrer les mots de passe</button>
+    </form>
+  </div>`;
+
+  html += `<div style="margin-top:14px;"><button class="btn-ghost" id="reset-data">Réinitialiser toutes les données</button></div>`;
   return html;
 }
 
@@ -1553,6 +1586,21 @@ function bindPageEvents(){
     });
   });
 
+  const pwForm = document.getElementById('password-form');
+  if(pwForm){
+    pwForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const eleveVal = document.getElementById('pw-eleve').value.trim();
+      const parentVal = document.getElementById('pw-parent').value.trim();
+      if(!eleveVal && !parentVal){ state.pwSaveMsg = 'Rien à changer.'; renderPage(); return; }
+      if(eleveVal) state.passwords.eleve = eleveVal;
+      if(parentVal) state.passwords.parent = parentVal;
+      await savePasswords();
+      state.pwSaveMsg = 'Mots de passe mis à jour ✓';
+      renderPage(); alertBanner('Mots de passe mis à jour ✓');
+    });
+  }
+
   const resetBtn = document.getElementById('reset-data');
   if(resetBtn){
     resetBtn.addEventListener('click', async ()=>{
@@ -1698,16 +1746,106 @@ function alertBanner(msg){
 function bindShellEvents(){
   document.querySelectorAll('.mode-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      state.mode = btn.dataset.mode; state.view = state.mode==='eleve' ? 'today' : 'add'; render();
+      const target = btn.dataset.mode;
+      if(target === state.mode) return;
+      state.authenticated = false; state.authTarget = target; state.authError = null; render();
     });
   });
   document.querySelectorAll('.tab').forEach(btn=>{
     btn.addEventListener('click', ()=>{ state.view = btn.dataset.view; render(); });
   });
+  const logoutBtn = document.getElementById('logout-btn');
+  if(logoutBtn){
+    logoutBtn.addEventListener('click', ()=>{
+      state.authenticated = false; state.authTarget = null; state.authError = null; render();
+    });
+  }
+}
+
+function viewSetupPasswords(){
+  return `<div class="auth-wrap"><div class="auth-card">
+    <div class="title">Bienvenue !</div>
+    <p class="muted">Avant de commencer, crée un mot de passe pour l'espace Élève et un autre pour l'espace Parent. C'est simple, juste pour éviter les erreurs de manipulation (ce n'est pas une protection très sécurisée).</p>
+    <form id="setup-form" style="text-align:left;">
+      <label>Mot de passe Élève</label><input type="password" id="setup-eleve" required placeholder="Ex. 1234">
+      <label>Mot de passe Parent</label><input type="password" id="setup-parent" required placeholder="Ex. maman2026">
+      ${state.authError? `<p class="auth-error">${esc(state.authError)}</p>` : ''}
+      <button type="submit" class="btn btn-primary" style="width:100%;">Créer les mots de passe</button>
+    </form>
+  </div></div>`;
+}
+
+function viewLogin(){
+  if(!state.authTarget){
+    return `<div class="auth-wrap"><div class="auth-card">
+      <div class="title">Qui utilise le cahier ?</div>
+      <p class="muted">Choisis ton espace pour continuer.</p>
+      <div class="role-grid">
+        <button class="role-btn" data-role="eleve"><span class="role-emoji">👧</span><span class="role-label">Élève</span></button>
+        <button class="role-btn" data-role="parent"><span class="role-emoji">👨‍👩‍👧</span><span class="role-label">Parent</span></button>
+      </div>
+    </div></div>`;
+  }
+  const roleLabel = state.authTarget==='eleve' ? 'Élève' : 'Parent';
+  return `<div class="auth-wrap"><div class="auth-card">
+    <div class="title">Espace ${roleLabel}</div>
+    <p class="muted">Entre le mot de passe pour continuer.</p>
+    <form id="login-form" style="text-align:left;">
+      <label>Mot de passe</label><input type="password" id="login-password" autofocus>
+      ${state.authError? `<p class="auth-error">${esc(state.authError)}</p>` : ''}
+      <button type="submit" class="btn btn-primary" style="width:100%;">Valider</button>
+    </form>
+    <div class="auth-back"><button class="btn-ghost" id="auth-back-btn">← Changer d'espace</button></div>
+  </div></div>`;
+}
+
+function bindAuthEvents(){
+  const setupForm = document.getElementById('setup-form');
+  if(setupForm){
+    setupForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const eleve = document.getElementById('setup-eleve').value.trim();
+      const parent = document.getElementById('setup-parent').value.trim();
+      if(!eleve || !parent){ state.authError = 'Merci de remplir les deux mots de passe.'; render(); return; }
+      state.passwords = { eleve, parent };
+      await savePasswords();
+      state.authError = null; state.authenticated = true; state.mode = 'parent'; state.view = 'add';
+      render();
+    });
+  }
+  document.querySelectorAll('.role-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.authTarget = btn.dataset.role; state.authError = null; render(); });
+  });
+  const authBackBtn = document.getElementById('auth-back-btn');
+  if(authBackBtn){ authBackBtn.addEventListener('click', ()=>{ state.authTarget = null; state.authError = null; render(); }); }
+  const loginForm = document.getElementById('login-form');
+  if(loginForm){
+    loginForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const val = document.getElementById('login-password').value;
+      if(val === state.passwords[state.authTarget]){
+        state.authenticated = true; state.mode = state.authTarget; state.view = state.mode==='eleve' ? 'today' : 'add';
+        state.authTarget = null; state.authError = null; render();
+      } else {
+        state.authError = 'Mot de passe incorrect.'; render();
+      }
+    });
+  }
 }
 
 function render(){
-  document.getElementById('app').innerHTML = shell();
+  const app = document.getElementById('app');
+  if(!state.passwords){
+    app.innerHTML = viewSetupPasswords();
+    bindAuthEvents();
+    return;
+  }
+  if(!state.authenticated){
+    app.innerHTML = viewLogin();
+    bindAuthEvents();
+    return;
+  }
+  app.innerHTML = shell();
   bindShellEvents(); renderPage();
 }
 
