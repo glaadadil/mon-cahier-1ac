@@ -1073,7 +1073,8 @@ const SEED = {
 
 let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
   apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false,
-  passwords:null, authenticated:false, authTarget:null, authError:null, pwSaveMsg:null };
+  passwords:null, authenticated:false, authTarget:null, authError:null, pwSaveMsg:null,
+  aiFillLoading:false, aiFillError:null, aiFillText:'' };
 
 function subj(key){ return SUBJECTS.find(s=>s.key===key) || {label:key,color:'#999'}; }
 function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10); }
@@ -1326,7 +1327,16 @@ function viewResourcesParent(){
     </div>`;
   }
 
-  html += `<div class="chapter-editor">
+  html += `<div class="chapter-editor" style="background:#FBF4DE; border:1.5px dashed var(--gold);">
+    <h2 class="section-title" style="font-size:20px;">✨ Remplir avec l'IA à partir d'un texte</h2>
+    <p class="muted">Colle le texte du vrai manuel, du cahier de ta fille, ou d'un résumé fait avec NotebookLM : l'IA pré-remplit la fiche ci-dessous. Relis et corrige avant d'enregistrer.</p>
+    <textarea id="ai-fill-text" style="min-height:110px;" placeholder="Colle ici le texte source (cours, notes, extrait de manuel...)">${esc(state.aiFillText)}</textarea>
+    ${!state.apiKey? `<p class="muted" style="font-size:12px;">Ajoute une clé API gratuite dans l'onglet « Générer (IA) » pour activer cet outil.</p>` : ''}
+    ${state.aiFillError? `<p class="auth-error">${esc(state.aiFillError)}</p>` : ''}
+    <button class="btn btn-secondary" id="ai-fill-btn" ${(!state.apiKey || state.aiFillLoading)?'disabled':''}>${state.aiFillLoading? '✨ Génération…' : '✨ Générer la fiche'}</button>
+  </div>
+
+  <div class="chapter-editor">
     <h2 class="section-title" style="font-size:22px;">${state.editingChapterId? 'Modifier la fiche' : 'Ajouter une fiche'}</h2>
     <form id="chapter-form">
       <input type="hidden" name="id" value="${state.editingChapterId||''}">
@@ -1562,6 +1572,11 @@ function bindPageEvents(){
   const cancelEdit = document.getElementById('cancel-edit');
   if(cancelEdit){ cancelEdit.addEventListener('click', ()=>{ state.editingChapterId = null; renderPage(); }); }
 
+  const aiFillBtn = document.getElementById('ai-fill-btn');
+  if(aiFillBtn){ aiFillBtn.addEventListener('click', ()=>{ generateFicheFromText(); }); }
+  const aiFillTextEl = document.getElementById('ai-fill-text');
+  if(aiFillTextEl){ aiFillTextEl.addEventListener('input', (e)=>{ state.aiFillText = e.target.value; }); }
+
   page.querySelectorAll('[data-action="edit-chapter"]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       state.editingChapterId = btn.dataset.id; renderPage();
@@ -1675,7 +1690,7 @@ function bindPageEvents(){
   }
 }
 
-async function callGemini(promptText, apiKey){
+async function callGeminiJSON(promptText, apiKey, schema){
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
   const resp = await fetch(url, {
     method: 'POST',
@@ -1684,12 +1699,8 @@ async function callGemini(promptText, apiKey){
       contents: [{ parts: [{ text: promptText }] }],
       generationConfig: {
         responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: { enonce: { type: 'STRING' }, reponse: { type: 'STRING' } },
-          required: ['enonce', 'reponse']
-        },
-        temperature: 0.9,
+        responseSchema: schema,
+        temperature: 0.8,
       }
     })
   });
@@ -1703,8 +1714,70 @@ async function callGemini(promptText, apiKey){
   if(!text) throw new Error("Réponse vide de l'IA, réessaie.");
   let parsed;
   try{ parsed = JSON.parse(text); }catch(e){ throw new Error("Réponse de l'IA illisible, réessaie."); }
+  return parsed;
+}
+
+async function callGemini(promptText, apiKey){
+  const schema = { type: 'OBJECT', properties: { enonce: { type: 'STRING' }, reponse: { type: 'STRING' } }, required: ['enonce', 'reponse'] };
+  const parsed = await callGeminiJSON(promptText, apiKey, schema);
   if(!parsed.enonce || !parsed.reponse) throw new Error("Réponse de l'IA incomplète, réessaie.");
   return parsed;
+}
+
+async function generateFicheFromText(){
+  const textarea = document.getElementById('ai-fill-text');
+  const sourceText = textarea ? textarea.value.trim() : '';
+  state.aiFillText = textarea ? textarea.value : '';
+  if(!sourceText){ state.aiFillError = "Colle d'abord un texte source."; renderPage(); return; }
+  if(!state.apiKey) return;
+  const s = subj(state.parentResourceSubject);
+  const langue = genLangFor(state.parentResourceSubject);
+  const schema = {
+    type: 'OBJECT',
+    properties: {
+      title: { type: 'STRING' }, essentiel: { type: 'STRING' }, cours: { type: 'STRING' },
+      piege: { type: 'STRING' }, astuce: { type: 'STRING' }, exercice: { type: 'STRING' }, reponse: { type: 'STRING' }
+    },
+    required: ['title','essentiel','cours','piege','astuce','exercice','reponse']
+  };
+  const promptText = `Tu es un professeur qui prépare des fiches de révision pour un·e élève marocain·e de 11 ans en 1ère année collège (6ème), matière : ${s.label}.
+Voici un texte source (cours, manuel scolaire, notes) à transformer en fiche de révision structurée :
+"""
+${sourceText}
+"""
+Rédige une fiche FIDÈLE à ce texte (n'invente pas de notions absentes du texte fourni), entièrement en ${langue}, dans un style simple adapté à un enfant de 11 ans, avec exactement ces champs :
+- title : titre court du chapitre
+- essentiel : l'idée clé à retenir, en 1-2 phrases
+- cours : explication claire avec un exemple, fondée sur le texte fourni
+- piege : une erreur fréquente à cet âge en lien avec ce sujet
+- astuce : un moyen mnémotechnique ou une astuce pour retenir
+- exercice : un petit exercice basé sur ce contenu
+- reponse : la réponse complète à cet exercice
+Réponds uniquement avec un objet JSON valide contenant exactement ces 7 clés. Aucun texte en dehors du JSON.`;
+
+  state.aiFillLoading = true; state.aiFillError = null; renderPage();
+  try{
+    const result = await callGeminiJSON(promptText, state.apiKey, schema);
+    if(!result.title || !result.cours) throw new Error("Réponse de l'IA incomplète, réessaie.");
+    state.aiFillLoading = false; state.aiFillError = null; state.editingChapterId = null;
+    renderPage();
+    setTimeout(()=>{
+      const f = document.getElementById('chapter-form');
+      if(f){
+        f.title.value = result.title||''; f.essentiel.value = result.essentiel||'';
+        f.cours.value = result.cours||''; f.piege.value = result.piege||'';
+        f.astuce.value = result.astuce||''; f.exercice.value = result.exercice||'';
+        f.reponse.value = result.reponse||'';
+        f.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    }, 0);
+    state.aiFillText = '';
+    alertBanner('Fiche générée, relis puis clique sur "Ajouter la fiche" ✓');
+  }catch(err){
+    state.aiFillLoading = false;
+    state.aiFillError = err && err.message ? err.message : "Une erreur est survenue, réessaie.";
+    renderPage();
+  }
 }
 
 async function generateExercise(){
