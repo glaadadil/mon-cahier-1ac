@@ -1267,7 +1267,8 @@ function viewAllTasks(){
     ${SUBJECTS.map(s=>`<option value="${s.key}" ${state.subjectFilter===s.key?'selected':''}>${esc(s.label)}</option>`).join('')}
   </select></div>`;
   if(sorted.length===0){
-    html += `<div class="empty"><span class="hand">Aucune tâche pour l'instant</span>Utilise l'onglet « Ajouter » pour commencer.</div>`;
+    const emptyLabel = state.subjectFilter==='all' ? "Aucune tâche pour l'instant" : `Aucune tâche en ${esc(subj(state.subjectFilter).label)} pour l'instant`;
+    html += `<div class="empty"><span class="hand">${emptyLabel}</span>Utilise l'onglet « Ajouter » pour en créer une.</div>`;
   } else {
     html += sorted.map(t=>{
       const s = subj(t.subject);
