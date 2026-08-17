@@ -1323,7 +1323,7 @@ const SEED = {
   ],
 };;;;;
 
-let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
+let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, openTaskId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
   apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false,
   discussModule:'fr', discussThemeFr: DISCUSSION_FR[0].key, discussThemeEn: DISCUSSION_EN[0].key, discussMode:'ai',
   discussChat:[], discussChatLoading:false, discussChatError:null,
@@ -1435,13 +1435,28 @@ function viewToday(){
 }
 function taskRow(t){
   const s = subj(t.subject);
-  return `<div class="task-row ${t.done?'done':''}" data-id="${t.id}">
+  const hasDetail = !!(t.enonce || t.desc);
+  const isOpen = hasDetail && state.openTaskId === t.id;
+  let html = `<div class="task-row ${t.done?'done':''}" data-id="${t.id}">
     <button class="checkbox ${t.done?'checked':''}" data-action="toggle" data-id="${t.id}">${t.done?'✓':''}</button>
     <span class="dot" style="background:${s.color}"></span>
-    <div class="task-main"><div class="task-title">${esc(t.title)}</div>
-      <div class="task-sub">${esc(s.label)}${t.desc? ' · '+esc(t.desc): ''}</div></div>
+    <div class="task-main" ${hasDetail?`data-action="toggle-task-detail" data-id="${t.id}" style="cursor:pointer;"`:''}>
+      <div class="task-title">${esc(t.title)}</div>
+      <div class="task-sub">${esc(s.label)}${hasDetail?` · ${isOpen?'▲ Masquer le détail':'▼ Voir le détail'}`:''}</div>
+    </div>
     ${t.minutes?`<span class="chip">${t.minutes} min</span>`:''}
     <span class="chip" style="background:${s.color}22;color:${s.color}">${typeLabel(t.type)}</span></div>`;
+  if(isOpen){
+    html += `<div class="card" style="margin:-6px 0 12px 34px; border-left:4px solid ${s.color};">
+      ${t.enonce ? `
+        <div class="chapter-section-label">✍️ Énoncé</div>
+        <div class="chapter-text">${esc(t.enonce)}</div>
+        ${t.reponse? `<button class="btn-small reveal-btn" data-reveal="task-${t.id}">Voir la réponse</button>
+        <div class="reveal-answer" id="answer-task-${t.id}">${esc(t.reponse)}</div>` : ''}
+      ` : `<div class="chapter-text">${esc(t.desc)}</div>`}
+    </div>`;
+  }
+  return html;
 }
 function typeLabel(k){ return (TYPES.find(x=>x.key===k)||{label:k}).label; }
 
@@ -1757,11 +1772,26 @@ function viewAllTasks(){
   } else {
     html += sorted.map(t=>{
       const s = subj(t.subject);
-      return `<div class="task-row ${t.done?'done':''}"><span class="dot" style="background:${s.color}"></span>
-        <div class="task-main"><div class="task-title">${esc(t.title)}</div>
-        <div class="task-sub">${esc(s.label)} · ${fmtDayShort(t.date)}${t.desc? ' · '+esc(t.desc): ''}</div></div>
+      const hasDetail = !!(t.enonce || t.desc);
+      const isOpen = hasDetail && state.openTaskId === t.id;
+      let row = `<div class="task-row ${t.done?'done':''}"><span class="dot" style="background:${s.color}"></span>
+        <div class="task-main" ${hasDetail?`data-action="toggle-task-detail" data-id="${t.id}" style="cursor:pointer;"`:''}>
+          <div class="task-title">${esc(t.title)}</div>
+          <div class="task-sub">${esc(s.label)} · ${fmtDayShort(t.date)}${hasDetail?` · ${isOpen?'▲ Masquer le détail':'▼ Voir le détail'}`:''}</div>
+        </div>
         <span class="chip">${typeLabel(t.type)}</span>
         <button class="btn-danger" data-action="delete" data-id="${t.id}">Supprimer</button></div>`;
+      if(isOpen){
+        row += `<div class="card" style="margin:-6px 0 12px 22px; border-left:4px solid ${s.color};">
+          ${t.enonce ? `
+            <div class="chapter-section-label">✍️ Énoncé</div>
+            <div class="chapter-text">${esc(t.enonce)}</div>
+            ${t.reponse? `<button class="btn-small reveal-btn" data-reveal="task-${t.id}">Voir la réponse</button>
+            <div class="reveal-answer" id="answer-task-${t.id}">${esc(t.reponse)}</div>` : ''}
+          ` : `<div class="chapter-text">${esc(t.desc)}</div>`}
+        </div>`;
+      }
+      return row;
     }).join('');
   }
   return html;
@@ -1912,9 +1942,13 @@ function viewGenerate(){
           <button class="btn-small reveal-btn" data-reveal="gen-answer">Voir la réponse</button>
           <div class="reveal-answer" id="answer-gen-answer">${esc(state.genResult.reponse)}</div>
         </div>
-        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+        <div class="form-grid" style="margin-top:14px;">
+          <div><label>Type de tâche</label><select id="gen-task-type">${TYPES.map(t=>`<option value="${t.key}" ${t.key==='devoir'?'selected':''}>${esc(t.label)}</option>`).join('')}</select></div>
+          <div><label>Date prévue</label><input type="date" id="gen-task-date" value="${todayISO()}"></div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
           <button class="btn btn-secondary" id="gen-again" ${state.genLoading?'disabled':''}>Générer un autre</button>
-          <button class="btn btn-secondary" id="gen-add-task">Ajouter comme devoir</button>
+          <button class="btn btn-primary" id="gen-add-task">Ajouter au cahier</button>
         </div>
       </div>
     </div>`;
@@ -1939,6 +1973,12 @@ function bindPageEvents(){
     btn.addEventListener('click', async ()=>{
       state.tasks = state.tasks.filter(x=>x.id!==btn.dataset.id);
       await saveTasks(); renderPage();
+    });
+  });
+  page.querySelectorAll('[data-action="toggle-task-detail"]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      state.openTaskId = state.openTaskId === el.dataset.id ? null : el.dataset.id;
+      renderPage();
     });
   });
   page.querySelectorAll('.mood-btn').forEach(btn=>{
@@ -2140,14 +2180,18 @@ function bindPageEvents(){
   if(genAddTaskBtn){
     genAddTaskBtn.addEventListener('click', async ()=>{
       if(!state.genResult) return;
+      const dateInput = document.getElementById('gen-task-date');
+      const typeInput = document.getElementById('gen-task-type');
+      const date = (dateInput && dateInput.value) ? dateInput.value : todayISO();
+      const type = (typeInput && typeInput.value) ? typeInput.value : 'devoir';
       const task = {
-        id: uid(), subject: state.genSubject, type: 'exercice',
+        id: uid(), subject: state.genSubject, type,
         title: `Exercice généré : ${state.genResult.chapterTitle||''}`.trim(),
-        desc: `Énoncé :\n${state.genResult.enonce}\n\nCorrection :\n${state.genResult.reponse}`,
-        date: todayISO(), minutes: null, done: false,
+        enonce: state.genResult.enonce, reponse: state.genResult.reponse,
+        date, minutes: null, done: false,
       };
       state.tasks.push(task); await saveTasks();
-      alertBanner('Ajouté aux tâches ✓');
+      alertBanner(`Ajouté au cahier pour le ${fmtDayShort(date)} ✓`);
     });
   }
 
