@@ -223,6 +223,149 @@ const SUBJECTS = [
   {key:'social',   label:'Sciences sociales',      color:'#A6702B'},
   {key:'info',     label:'Informatique',           color:'#D6449A'},
 ];
+
+const DISCUSSION_THEMES = [
+  {key:"greetings", label_fr:"Se présenter", label_en:"Greetings and introducing yourself",
+    dialogue_fr:[
+      {bot:"Salut ! Comment tu t'appelles ?", options:["Je m'appelle Salma.","Moi, c'est Yasmine."]},
+      {bot:"Enchanté(e) ! Quel âge as-tu ?", options:["J'ai 11 ans.","J'ai onze ans, et toi ?"]},
+      {bot:"Super ! Tu es en quelle classe ?", options:["Je suis en 1ère année collège.","Je suis en première année du collège."]},
+      {bot:"Génial, moi aussi j'adore cette année ! À bientôt !", options:["À bientôt ! Bonne journée !","Au revoir, à la prochaine !"]}
+    ],
+    dialogue_en:[
+      {bot:"Hi! What's your name?", options:["My name is Salma.","I'm Yasmine."]},
+      {bot:"Nice to meet you! How old are you?", options:["I'm 11 years old.","I am eleven, and you?"]},
+      {bot:"Cool! Where are you from?", options:["I'm from Morocco.","I am from Rabat, Morocco."]},
+      {bot:"That's great! See you soon!", options:["See you soon! Bye!","Goodbye, have a nice day!"]}
+    ]
+  },
+  {key:"school", label_fr:"L'école", label_en:"School and classroom objects",
+    dialogue_fr:[
+      {bot:"Qu'est-ce que tu as dans ton sac aujourd'hui ?", options:["J'ai mon cahier et ma trousse.","J'ai un livre et une règle."]},
+      {bot:"Quelle est ta matière préférée ?", options:["J'aime les mathématiques.","Ma matière préférée, c'est le français."]},
+      {bot:"Pourquoi tu aimes cette matière ?", options:["Parce que c'est amusant.","Parce que la maîtresse explique bien."]},
+      {bot:"C'est une bonne raison ! Bon courage pour tes cours.", options:["Merci beaucoup !","Merci, à bientôt !"]}
+    ],
+    dialogue_en:[
+      {bot:"What's in your school bag today?", options:["I have my notebook and my pencil case.","I have a book and a ruler."]},
+      {bot:"What is your favourite subject?", options:["I like Mathematics.","My favourite subject is English."]},
+      {bot:"Why do you like it?", options:["Because it is fun.","Because the teacher explains well."]},
+      {bot:"Great answer! Good luck with your classes.", options:["Thank you very much!","Thanks, see you later!"]}
+    ]
+  },
+  {key:"family", label_fr:"Ma famille", label_en:"My family",
+    dialogue_fr:[
+      {bot:"Parle-moi de ta famille. Vous êtes combien ?", options:["Nous sommes cinq à la maison.","Nous sommes quatre : mes parents, mon frère et moi."]},
+      {bot:"Tu as des frères et sœurs ?", options:["Oui, j'ai une petite sœur.","Oui, j'ai un grand frère."]},
+      {bot:"Vous jouez souvent ensemble ?", options:["Oui, on joue tous les weekends.","Oui, surtout le soir après les devoirs."]},
+      {bot:"C'est chouette d'avoir une famille comme ça !", options:["Oui, j'adore ma famille.","Merci, c'est vrai !"]}
+    ],
+    dialogue_en:[
+      {bot:"Tell me about your family. How many are you?", options:["We are five at home.","We are four: my parents, my brother and me."]},
+      {bot:"Do you have any brothers or sisters?", options:["Yes, I have a little sister.","Yes, I have a big brother."]},
+      {bot:"Do you often play together?", options:["Yes, we play every weekend.","Yes, especially in the evening."]},
+      {bot:"That sounds like a lovely family!", options:["Yes, I love my family.","Thank you, it's true!"]}
+    ]
+  },
+  {key:"house", label_fr:"Ma maison", label_en:"My house",
+    dialogue_fr:[
+      {bot:"Tu habites dans une maison ou un appartement ?", options:["J'habite dans un appartement.","J'habite dans une maison."]},
+      {bot:"Quelle est ta pièce préférée ?", options:["Ma chambre, bien sûr !","Le salon, pour regarder des films."]},
+      {bot:"Qu'est-ce qu'il y a dans cette pièce ?", options:["Il y a mon lit et mon bureau.","Il y a un grand canapé et une télévision."]},
+      {bot:"Ça donne envie d'aller chez toi !", options:["Tu es toujours bienvenu(e) !","Merci, viens quand tu veux !"]}
+    ],
+    dialogue_en:[
+      {bot:"Do you live in a house or a flat?", options:["I live in a flat.","I live in a house."]},
+      {bot:"What is your favourite room?", options:["My bedroom, of course!","The living room, to watch films."]},
+      {bot:"What is in that room?", options:["There is my bed and my desk.","There is a big sofa and a TV."]},
+      {bot:"That sounds like a nice room!", options:["You're always welcome!","Thank you, come anytime!"]}
+    ]
+  },
+  {key:"clothes", label_fr:"Vêtements et couleurs", label_en:"Clothes and colours",
+    dialogue_fr:[
+      {bot:"Qu'est-ce que tu portes aujourd'hui ?", options:["Je porte un pantalon bleu et un pull.","Je porte une robe jaune."]},
+      {bot:"Quelle est ta couleur préférée ?", options:["Ma couleur préférée est le violet.","J'aime beaucoup le vert."]},
+      {bot:"Qu'est-ce que tu aimes porter le weekend ?", options:["J'aime porter un survêtement confortable.","J'aime porter mes baskets préférées."]},
+      {bot:"Ça a l'air très confortable !", options:["Oui, c'est parfait pour jouer.","Oui, exactement !"]}
+    ],
+    dialogue_en:[
+      {bot:"What are you wearing today?", options:["I'm wearing blue trousers and a jumper.","I'm wearing a yellow dress."]},
+      {bot:"What is your favourite colour?", options:["My favourite colour is purple.","I really like green."]},
+      {bot:"What do you like to wear on weekends?", options:["I like wearing comfy tracksuits.","I like wearing my favourite sneakers."]},
+      {bot:"That sounds very comfortable!", options:["Yes, perfect for playing.","Yes, exactly!"]}
+    ]
+  },
+  {key:"food", label_fr:"Nourriture et boissons", label_en:"Food and drinks",
+    dialogue_fr:[
+      {bot:"Qu'est-ce que tu as mangé au petit-déjeuner ?", options:["J'ai mangé du pain avec du miel.","J'ai bu du lait et mangé des crêpes."]},
+      {bot:"Quel est ton plat préféré ?", options:["J'adore le couscous.","Mon plat préféré, c'est le tajine."]},
+      {bot:"Et comme boisson, qu'est-ce que tu préfères ?", options:["Je préfère le jus d'orange.","J'aime bien le thé à la menthe."]},
+      {bot:"Miam, ça donne faim !", options:["Oui, c'est délicieux !","Haha, tu devrais essayer !"]}
+    ],
+    dialogue_en:[
+      {bot:"What did you eat for breakfast?", options:["I ate bread with honey.","I drank milk and ate pancakes."]},
+      {bot:"What is your favourite dish?", options:["I love couscous.","My favourite dish is tajine."]},
+      {bot:"And what drink do you prefer?", options:["I prefer orange juice.","I like mint tea."]},
+      {bot:"Yum, that makes me hungry!", options:["Yes, it's delicious!","Haha, you should try it!"]}
+    ]
+  },
+  {key:"transport", label_fr:"Transports", label_en:"Transport and getting around",
+    dialogue_fr:[
+      {bot:"Comment tu vas à l'école ?", options:["Je vais à l'école en voiture.","J'y vais à pied avec mes amis."]},
+      {bot:"Ça prend combien de temps ?", options:["Ça prend environ dix minutes.","Ça prend un quart d'heure."]},
+      {bot:"Tu préfères le bus ou le vélo ?", options:["Je préfère le vélo, c'est plus rapide.","Je préfère le bus, c'est plus confortable."]},
+      {bot:"Bon choix, l'important c'est d'arriver à l'heure !", options:["Oui, je ne suis jamais en retard.","Exactement, c'est important !"]}
+    ],
+    dialogue_en:[
+      {bot:"How do you go to school?", options:["I go to school by car.","I walk there with my friends."]},
+      {bot:"How long does it take?", options:["It takes about ten minutes.","It takes a quarter of an hour."]},
+      {bot:"Do you prefer the bus or a bike?", options:["I prefer the bike, it's faster.","I prefer the bus, it's more comfortable."]},
+      {bot:"Good choice, being on time matters!", options:["Yes, I'm never late.","Exactly, that's important!"]}
+    ]
+  },
+  {key:"sports", label_fr:"Sports", label_en:"Sports and abilities",
+    dialogue_fr:[
+      {bot:"Est-ce que tu fais du sport ?", options:["Oui, je joue au basket.","Oui, je fais de la natation."]},
+      {bot:"Depuis combien de temps ?", options:["Depuis deux ans.","Depuis l'année dernière."]},
+      {bot:"Est-ce que tu es bon(ne) dans ce sport ?", options:["Oui, je peux courir très vite.","Je m'améliore chaque semaine."]},
+      {bot:"Bravo, continue comme ça !", options:["Merci, je vais m'entraîner encore !","Merci beaucoup !"]}
+    ],
+    dialogue_en:[
+      {bot:"Do you play any sports?", options:["Yes, I play basketball.","Yes, I go swimming."]},
+      {bot:"How long have you been doing it?", options:["For two years.","Since last year."]},
+      {bot:"Are you good at this sport?", options:["Yes, I can run very fast.","I'm getting better every week."]},
+      {bot:"Well done, keep it up!", options:["Thanks, I'll keep training!","Thank you very much!"]}
+    ]
+  },
+  {key:"freetime", label_fr:"Loisirs", label_en:"Free time and routines",
+    dialogue_fr:[
+      {bot:"Qu'est-ce que tu aimes faire pendant ton temps libre ?", options:["J'aime dessiner.","J'aime lire des bandes dessinées."]},
+      {bot:"À quelle heure tu te réveilles le weekend ?", options:["Je me réveille vers neuf heures.","Je me réveille assez tard, vers dix heures."]},
+      {bot:"Et le soir, qu'est-ce que tu fais avant de dormir ?", options:["Je lis un peu avant de dormir.","Je regarde une courte vidéo avec mes parents."]},
+      {bot:"Ça a l'air d'une belle routine !", options:["Oui, j'aime bien ma routine.","Merci, c'est vrai !"]}
+    ],
+    dialogue_en:[
+      {bot:"What do you like doing in your free time?", options:["I like drawing.","I like reading comic books."]},
+      {bot:"What time do you wake up on weekends?", options:["I wake up around nine.","I wake up quite late, around ten."]},
+      {bot:"And in the evening, what do you do before bed?", options:["I read a little before sleeping.","I watch a short video with my parents."]},
+      {bot:"That sounds like a nice routine!", options:["Yes, I like my routine.","Thanks, it's true!"]}
+    ]
+  },
+  {key:"health", label_fr:"Santé", label_en:"Health and feeling well",
+    dialogue_fr:[
+      {bot:"Comment tu te sens aujourd'hui ?", options:["Je me sens très bien, merci !","Je suis un peu fatigué(e) aujourd'hui."]},
+      {bot:"Qu'est-ce que tu fais pour rester en bonne santé ?", options:["Je mange des fruits et des légumes.","Je fais du sport et je dors bien."]},
+      {bot:"Bonne habitude ! Tu bois assez d'eau ?", options:["Oui, je bois beaucoup d'eau.","J'essaie de boire de l'eau toute la journée."]},
+      {bot:"Parfait, prends bien soin de toi !", options:["Merci, toi aussi !","Merci beaucoup !"]}
+    ],
+    dialogue_en:[
+      {bot:"How are you feeling today?", options:["I feel very well, thank you!","I feel a bit tired today."]},
+      {bot:"What do you do to stay healthy?", options:["I eat fruit and vegetables.","I play sports and sleep well."]},
+      {bot:"Good habit! Do you drink enough water?", options:["Yes, I drink lots of water.","I try to drink water all day."]},
+      {bot:"Perfect, take good care of yourself!", options:["Thanks, you too!","Thank you very much!"]}
+    ]
+  }
+];
 const TYPES = [
   {key:'devoir',   label:'Devoir'},
   {key:'exercice', label:'Exercice'},
@@ -1159,6 +1302,9 @@ const SEED = {
 
 let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
   apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false,
+  discussLang:'fr', discussTheme: DISCUSSION_THEMES[0].key, discussMode:'ai',
+  discussChat:[], discussChatLoading:false, discussChatError:null,
+  discussGuidedStep:0,
   passwords:null, authenticated:false, authTarget:null, authError:null, pwSaveMsg:null,
   aiFillLoading:false, aiFillError:null, aiFillText:'' };
 
@@ -1219,7 +1365,7 @@ function shell(){
     </div>
     <nav class="tabs">
       ${(state.mode==='eleve'
-        ? [['today',"Aujourd'hui"],['week','Cette semaine'],['subjects','Mes matières']]
+        ? [['today',"Aujourd'hui"],['week','Cette semaine'],['subjects','Mes matières'],['discuss','Discussion langue']]
         : [['add','Ajouter'],['tasks','Toutes les tâches'],['resources','Ressources'],['generate','Générer (IA)']]
       ).map(([v,l])=>`<button class="tab ${state.view===v?'active':''}" data-view="${v}">${l}</button>`).join('')}
     </nav>
@@ -1234,6 +1380,7 @@ function renderPage(){
   if(state.mode==='eleve'){
     if(state.view==='today') page.innerHTML = viewToday();
     else if(state.view==='week') page.innerHTML = viewWeek();
+    else if(state.view==='discuss') page.innerHTML = viewDiscuss();
     else page.innerHTML = viewSubjectsEleve();
   } else {
     if(state.view==='add') page.innerHTML = viewAdd();
@@ -1360,6 +1507,191 @@ function chapterCardHTML(c,s,compact){
         </div>`:''}
     </div>
   </div>`;
+}
+
+/* ---------- ÉLÈVE : Discussion langue ---------- */
+function discussTheme(){ return DISCUSSION_THEMES.find(t=>t.key===state.discussTheme) || DISCUSSION_THEMES[0]; }
+function discussLangLabel(){ return state.discussLang==='en' ? 'anglais' : 'français'; }
+function discussLangCode(){ return state.discussLang==='en' ? 'en-US' : 'fr-FR'; }
+function discussLangColor(){ return state.discussLang==='en' ? '#8B5CF6' : '#3B6FB6'; }
+
+function viewDiscuss(){
+  const theme = discussTheme();
+  const themeLabel = state.discussLang==='en' ? theme.label_en : theme.label_fr;
+  const dialogue = state.discussLang==='en' ? theme.dialogue_en : theme.dialogue_fr;
+  const hasKey = !!state.apiKey;
+  const step = Math.min(state.discussGuidedStep, dialogue.length - 1);
+  const turn = dialogue[step];
+  const isLast = step >= dialogue.length - 1;
+
+  let html = `<h2 class="section-title">Discussion langue</h2>
+  <p class="muted">S'entraîner à parler français et anglais, thème par thème, en discutant avec l'IA ou avec un dialogue guidé.</p>
+
+  <div class="card" style="margin-bottom:14px;">
+    <div class="form-grid">
+      <div>
+        <label>Langue</label>
+        <div class="mode-switch" style="margin-top:4px;">
+          <button class="mode-btn ${state.discussLang==='fr'?'active':''}" data-discuss-lang="fr">Français</button>
+          <button class="mode-btn ${state.discussLang==='en'?'active':''}" data-discuss-lang="en">English</button>
+        </div>
+      </div>
+      <div>
+        <label>Thème</label>
+        <select id="discuss-theme-select">
+          ${DISCUSSION_THEMES.map(t=>`<option value="${t.key}" ${state.discussTheme===t.key?'selected':''}>${esc(state.discussLang==='en'?t.label_en:t.label_fr)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-left:5px solid ${discussLangColor()};">
+    <div class="eyebrow">💬 Discuter avec l'IA · ${esc(themeLabel)}</div>
+    ${!hasKey ? `
+      <p class="muted" style="margin-top:8px;">Ajoute une clé API gratuite dans l'onglet Parent « Générer (IA) » pour activer la discussion avec l'IA. En attendant, utilise le dialogue guidé ci-dessous.</p>
+    ` : `
+      <div id="discuss-chat-log" style="max-height:320px; overflow-y:auto; margin:10px 0; display:flex; flex-direction:column; gap:8px;">
+        ${state.discussChat.length===0 ? `<p class="muted">Clique sur « Démarrer » pour commencer une conversation sur ce thème.</p>` : state.discussChat.map(m=>`
+          <div style="align-self:${m.role==='user'?'flex-end':'flex-start'}; max-width:85%; background:${m.role==='user'?discussLangColor():'#EEF1F0'}; color:${m.role==='user'?'#fff':'#1c1c1c'}; padding:8px 12px; border-radius:12px; font-size:14px; line-height:1.4;">${esc(m.text)}</div>
+        `).join('')}
+        ${state.discussChatLoading? `<p class="muted">✨ L'IA écrit…</p>` : ''}
+      </div>
+      ${state.discussChatError? `<p class="muted" style="color:#B3261E;">⚠️ ${esc(state.discussChatError)} <button class="btn-ghost" id="discuss-chat-retry" style="margin-left:6px;">Réessayer</button></p>` : ''}
+      <form id="discuss-chat-form" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input type="text" id="discuss-chat-input" placeholder="${state.discussLang==='en'?'Type your answer in English…':'Écris ta réponse en français…'}" style="flex:1; min-width:160px;" ${state.discussChatLoading?'disabled':''}>
+        <button class="btn btn-primary" type="submit" ${state.discussChatLoading?'disabled':''}>Envoyer</button>
+      </form>
+      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" id="discuss-chat-start" ${state.discussChatLoading?'disabled':''}>${state.discussChat.length===0?'Démarrer':'Recommencer'}</button>
+      </div>
+    `}
+  </div>
+
+  <div class="card" style="margin-top:14px; border-left:5px solid ${discussLangColor()};">
+    <div class="eyebrow">🎭 Dialogue guidé (sans IA) · ${esc(themeLabel)}</div>
+    <p class="muted" style="font-size:12px;">Étape ${step+1}/${dialogue.length} · Clique sur 🔊 pour écouter, choisis une réponse puis répète-la à voix haute.</p>
+    <div class="card" style="background:#F4F1EA; margin-top:10px;">
+      <div style="display:flex; align-items:flex-start; gap:8px;">
+        <p style="flex:1; font-weight:700; margin:0;">${esc(turn.bot)}</p>
+        <button class="btn-small" data-action="speak" data-text="${esc(turn.bot)}" title="Écouter">🔊</button>
+      </div>
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+        ${turn.options.map((opt,i)=>`
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn btn-secondary" style="flex:1; text-align:left;" data-action="discuss-answer" data-step="${step}">${esc(opt)}</button>
+            <button class="btn-small" data-action="speak" data-text="${esc(opt)}" title="Écouter">🔊</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+      ${step>0? `<button class="btn-ghost" data-action="discuss-restart">Recommencer le dialogue</button>` : ''}
+      ${isLast && step>0 ? `<span class="muted">🎉 Dialogue terminé, bravo !</span>` : ''}
+    </div>
+  </div>`;
+
+  return html;
+}
+
+function speak(text, lang){
+  try{
+    if(!('speechSynthesis' in window)) { alertBanner('La lecture audio n\'est pas disponible sur cet appareil.'); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang || discussLangCode();
+    utter.rate = 0.92;
+    window.speechSynthesis.speak(utter);
+  }catch(e){ console.error(e); }
+}
+
+async function callGeminiText(promptText, apiKey){
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+    body: JSON.stringify({
+      contents: promptText,
+      generationConfig: { temperature: 0.8 }
+    })
+  });
+  if(!resp.ok){
+    if(resp.status===400 || resp.status===401 || resp.status===403) throw new Error("Clé API invalide ou refusée. Vérifie qu'elle est bien copiée depuis aistudio.google.com/apikey.");
+    if(resp.status===429) throw new Error("Trop de demandes pour l'instant (quota gratuit atteint). Réessaie dans quelques minutes.");
+    throw new Error(`Erreur du service IA (code ${resp.status}). Réessaie plus tard.`);
+  }
+  const data = await resp.json();
+  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+  if(!text) throw new Error("Réponse vide de l'IA, réessaie.");
+  return text.trim();
+}
+
+function discussSystemPrompt(){
+  const theme = discussTheme();
+  const themeLabel = state.discussLang==='en' ? theme.label_en : theme.label_fr;
+  if(state.discussLang==='en'){
+    return `Tu es un ami virtuel amical qui aide une élève marocaine de 11 ans (1ère année collège, niveau débutant) à s'entraîner à parler anglais basique, sur le thème : "${themeLabel}".
+Règles :
+- Écris uniquement en anglais très simple (vocabulaire concret, phrases courtes, niveau A1).
+- Pose UNE question à la fois, en lien avec le thème.
+- Si son message précédent contient une erreur, corrige-la gentiment en 1 courte phrase avant ta question (ex: "Good try! We say 'I go to school', not 'I goes to school'."), sinon félicite-la brièvement.
+- Reste toujours positif, encourageant, jamais sévère.
+- Réponses courtes (2-3 phrases maximum).`;
+  }
+  return `Tu es un ami virtuel amical qui aide une élève marocaine de 11 ans (1ère année collège) à s'entraîner à s'exprimer à l'oral en français, sur le thème : "${themeLabel}".
+Règles :
+- Écris en français simple et clair, adapté à son âge.
+- Pose UNE question à la fois, en lien avec le thème, pour relancer la conversation.
+- Si son message précédent contient une faute de grammaire, de conjugaison ou de vocabulaire, corrige-la gentiment en 1 courte phrase avant ta question, sinon félicite-la brièvement.
+- Reste toujours positif, encourageant, jamais sévère.
+- Réponses courtes (2-3 phrases maximum).`;
+}
+
+async function discussStartChat(){
+  if(!state.apiKey) return;
+  state.discussChat = [];
+  state.discussChatError = null;
+  state.discussChatLoading = true; renderPage();
+  try{
+    const contents = [{ role:'user', parts:[{text: discussSystemPrompt() + '\n\nCommence maintenant la conversation avec une phrase d\'accueil courte et une première question.'}] }];
+    const reply = await callGeminiText(contents, state.apiKey);
+    state.discussChat.push({role:'model', text: reply});
+  }catch(err){
+    state.discussChatError = err && err.message ? err.message : "Une erreur est survenue, réessaie.";
+  }finally{
+    state.discussChatLoading = false; renderPage();
+    setTimeout(()=>{ const log=document.getElementById('discuss-chat-log'); if(log) log.scrollTop = log.scrollHeight; }, 0);
+  }
+}
+
+async function discussContinueChat(){
+  if(!state.apiKey) return;
+  state.discussChatError = null;
+  state.discussChatLoading = true; renderPage();
+  try{
+    const contents = [
+      { role:'user', parts:[{text: discussSystemPrompt()}] },
+      { role:'model', parts:[{text: 'Compris, je vais suivre ces règles.'}] },
+      ...state.discussChat.map(m=>({ role: m.role==='user'?'user':'model', parts:[{text:m.text}] }))
+    ];
+    const reply = await callGeminiText(contents, state.apiKey);
+    state.discussChat.push({role:'model', text: reply});
+  }catch(err){
+    state.discussChatError = err && err.message ? err.message : "Une erreur est survenue, réessaie.";
+  }finally{
+    state.discussChatLoading = false; renderPage();
+    setTimeout(()=>{ const log=document.getElementById('discuss-chat-log'); if(log) log.scrollTop = log.scrollHeight; }, 0);
+  }
+}
+
+async function discussSendMessage(userText){
+  if(!state.apiKey || !userText) return;
+  state.discussChat.push({role:'user', text: userText});
+  await discussContinueChat();
+}
+
+async function discussRetry(){
+  if(state.discussChat.length===0){ await discussStartChat(); }
+  else { await discussContinueChat(); }
 }
 
 /* ---------- PARENT : Ajouter tâche ---------- */
@@ -1791,10 +2123,62 @@ function bindPageEvents(){
       alertBanner('Ajouté aux tâches ✓');
     });
   }
+
+  page.querySelectorAll('[data-discuss-lang]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const val = btn.dataset.discussLang;
+      if(val===state.discussLang) return;
+      state.discussLang = val; state.discussGuidedStep = 0;
+      state.discussChat = []; state.discussChatError = null;
+      renderPage();
+    });
+  });
+  const discussThemeSelect = document.getElementById('discuss-theme-select');
+  if(discussThemeSelect){
+    discussThemeSelect.addEventListener('change', ()=>{
+      state.discussTheme = discussThemeSelect.value; state.discussGuidedStep = 0;
+      state.discussChat = []; state.discussChatError = null;
+      renderPage();
+    });
+  }
+  page.querySelectorAll('[data-action="speak"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ speak(btn.dataset.text, discussLangCode()); });
+  });
+  page.querySelectorAll('[data-action="discuss-answer"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const theme = discussTheme();
+      const dialogue = state.discussLang==='en' ? theme.dialogue_en : theme.dialogue_fr;
+      if(state.discussGuidedStep < dialogue.length - 1) state.discussGuidedStep += 1;
+      renderPage();
+    });
+  });
+  const discussRestartBtn = document.getElementById('discuss-restart') || page.querySelector('[data-action="discuss-restart"]');
+  if(discussRestartBtn){
+    discussRestartBtn.addEventListener('click', ()=>{ state.discussGuidedStep = 0; renderPage(); });
+  }
+  const discussChatStartBtn = document.getElementById('discuss-chat-start');
+  if(discussChatStartBtn){
+    discussChatStartBtn.addEventListener('click', ()=>{ discussStartChat(); });
+  }
+  const discussChatRetryBtn = document.getElementById('discuss-chat-retry');
+  if(discussChatRetryBtn){
+    discussChatRetryBtn.addEventListener('click', ()=>{ discussRetry(); });
+  }
+  const discussChatForm = document.getElementById('discuss-chat-form');
+  if(discussChatForm){
+    discussChatForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const input = document.getElementById('discuss-chat-input');
+      const val = (input.value||'').trim();
+      if(!val) return;
+      input.value = '';
+      discussSendMessage(val);
+    });
+  }
 }
 
 async function callGeminiJSON(promptText, apiKey, schema){
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
