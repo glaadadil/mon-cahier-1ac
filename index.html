@@ -224,141 +224,164 @@ const SUBJECTS = [
   {key:'info',     label:'Informatique',           color:'#D6449A'},
 ];
 
-const DISCUSSION_THEMES = [
-  {key:"greetings", label_fr:"Se présenter", label_en:"Greetings and introducing yourself",
-    dialogue_fr:[
-      {bot:"Salut ! Comment tu t'appelles ?", options:["Je m'appelle Salma.","Moi, c'est Yasmine."]},
-      {bot:"Enchanté(e) ! Quel âge as-tu ?", options:["J'ai 11 ans.","J'ai onze ans, et toi ?"]},
-      {bot:"Super ! Tu es en quelle classe ?", options:["Je suis en 1ère année collège.","Je suis en première année du collège."]},
-      {bot:"Génial, moi aussi j'adore cette année ! À bientôt !", options:["À bientôt ! Bonne journée !","Au revoir, à la prochaine !"]}
-    ],
-    dialogue_en:[
+const DISCUSSION_FR = [
+  {key:"presentation", label:"Se présenter en détail",
+    dialogue:[
+      {bot:"Présente-toi : ton nom, ton âge, et une chose qui te rend unique.", options:["Je m'appelle Salma, j'ai 11 ans, et je suis passionnée de dessin depuis toute petite.","Moi c'est Yasmine, 11 ans, et ce qui me rend unique, c'est que je parle trois langues."]},
+      {bot:"Qu'est-ce qui te passionne le plus dans la vie, et pourquoi ?", options:["Ce qui me passionne le plus, c'est la lecture, car elle m'emmène dans d'autres mondes.","J'adore le sport, parce que ça me permet de me dépasser chaque jour."]},
+      {bot:"Si tu devais te décrire en trois mots, lesquels choisirais-tu ?", options:["Je dirais curieuse, courageuse et un peu rêveuse.","Je choisirais joyeuse, déterminée et généreuse."]},
+      {bot:"Merci pour cette belle présentation, j'ai l'impression de mieux te connaître !", options:["Merci à toi de m'avoir écoutée avec attention !","C'était un plaisir de me présenter ainsi !"]}
+    ]
+  },
+  {key:"souvenir", label:"Raconter un souvenir",
+    dialogue:[
+      {bot:"Raconte-moi un souvenir qui t'a particulièrement marqué. Que s'est-il passé ?", options:["L'année dernière, je suis partie en voyage avec ma famille et j'ai découvert une ville magnifique.","Un jour, j'ai remporté un concours de dessin à l'école, et j'étais vraiment fière de moi."]},
+      {bot:"Pourquoi ce moment était-il si spécial pour toi ?", options:["Parce que j'étais entourée des personnes que j'aime et que tout s'est très bien passé.","Parce que j'avais beaucoup travaillé pour y arriver, alors j'étais particulièrement heureuse."]},
+      {bot:"Est-ce que tu as ressenti d'autres émotions ce jour-là ?", options:["Oui, j'étais aussi un peu nerveuse avant, mais tout s'est transformé en joie ensuite.","J'ai ressenti de la surprise, car je ne m'attendais pas du tout à ce résultat."]},
+      {bot:"Merci d'avoir partagé ce souvenir, c'était vraiment intéressant à écouter !", options:["Merci de m'avoir écoutée avec autant d'attention !","Avec plaisir, j'aime beaucoup raconter cette histoire !"]}
+    ]
+  },
+  {key:"description", label:"Décrire une personne ou un lieu",
+    dialogue:[
+      {bot:"Décris-moi une personne que tu admires. À quoi ressemble-t-elle et pourquoi l'admires-tu ?", options:["J'admire ma grand-mère : elle est petite, souriante, et toujours pleine de sagesse.","J'admire ma maîtresse, qui est patiente et qui explique toujours très clairement."]},
+      {bot:"Peux-tu aussi me décrire un lieu que tu adores visiter ?", options:["J'adore la médina de ma ville, avec ses ruelles étroites et ses couleurs vives.","Mon endroit préféré est la plage, avec le sable doré et le bruit apaisant des vagues."]},
+      {bot:"Qu'est-ce qui rend ce lieu si particulier selon toi ?", options:["C'est l'ambiance chaleureuse et les odeurs d'épices qui flottent partout.","C'est le calme et la beauté du paysage qui me font tout oublier."]},
+      {bot:"Tes descriptions sont pleines de détails, bravo !", options:["Merci, j'aime beaucoup observer et décrire ce qui m'entoure.","Merci beaucoup, c'est un sujet que j'apprécie particulièrement."]}
+    ]
+  },
+  {key:"avis_livre_film", label:"Donner son avis sur un livre ou un film",
+    dialogue:[
+      {bot:"Quel est le dernier livre ou film qui t'a plu ? Donne-moi ton avis.", options:["J'ai adoré le dernier film que j'ai vu, car l'histoire était pleine de rebondissements.","J'ai beaucoup aimé un roman d'aventure, parce que le personnage principal était très courageux."]},
+      {bot:"Qu'est-ce qui t'a le plus plu dans cette histoire ?", options:["Ce qui m'a le plus plu, c'est la fin surprenante que je n'avais pas du tout imaginée.","J'ai surtout aimé l'amitié entre les personnages, qui rendait l'histoire touchante."]},
+      {bot:"Y a-t-il quelque chose que tu changerais dans cette histoire ?", options:["Je pense que le début était un peu lent, j'aurais aimé que l'action commence plus vite.","Non, je trouve que tout était parfaitement équilibré du début à la fin."]},
+      {bot:"Merci pour cette critique bien argumentée !", options:["Merci, j'aime beaucoup donner mon avis sur ce que je lis ou regarde.","C'est un plaisir de partager mes impressions avec toi !"]}
+    ]
+  },
+  {key:"loisirs_passion", label:"Parler de ses loisirs et de sa passion",
+    dialogue:[
+      {bot:"Quelle activité pratiques-tu pendant ton temps libre, et depuis combien de temps ?", options:["Je fais de la natation depuis trois ans, et c'est devenu une vraie passion.","Je dessine depuis que je suis petite, presque tous les jours après l'école."]},
+      {bot:"Qu'est-ce que cette activité t'apporte au quotidien ?", options:["Elle m'aide à me détendre après une journée fatigante à l'école.","Elle me permet d'exprimer mes idées et de laisser parler mon imagination."]},
+      {bot:"As-tu un objectif ou un rêve lié à cette passion ?", options:["Oui, j'aimerais un jour participer à une compétition régionale.","J'aimerais exposer mes dessins dans une petite exposition à l'école."]},
+      {bot:"C'est un très beau projet, je te souhaite de le réaliser !", options:["Merci beaucoup, je vais continuer à m'entraîner pour y arriver !","Merci, tes encouragements me donnent encore plus envie de progresser !"]}
+    ]
+  },
+  {key:"raconter_histoire", label:"Raconter une histoire",
+    dialogue:[
+      {bot:"Invente le début d'une petite histoire : qui est le personnage principal, et où se trouve-t-il ?", options:["Il était une fois une jeune fille qui vivait dans un petit village au bord de la mer.","Il était une fois un garçon curieux qui explorait chaque jour la forêt près de chez lui."]},
+      {bot:"Un jour, un événement inattendu se produit. Que se passe-t-il ?", options:["Un jour, elle a découvert une carte mystérieuse cachée dans un vieux livre.","Un jour, il a trouvé une petite porte cachée derrière un grand arbre."]},
+      {bot:"Comment le personnage réagit-il face à cette découverte ?", options:["Elle a d'abord eu peur, puis elle a décidé de suivre la carte par curiosité.","Il a hésité un instant, puis il a rassemblé son courage pour ouvrir la porte."]},
+      {bot:"Et comment se termine ton histoire ?", options:["Finalement, elle a découvert un trésor caché et elle l'a partagé avec tout le village.","Finalement, il a découvert un monde magique et il y est retourné chaque été."]}
+    ]
+  },
+  {key:"debat_ecole", label:"Parler de l'école et débattre un sujet",
+    dialogue:[
+      {bot:"Es-tu plutôt pour ou contre les devoirs après l'école ? Explique ton avis.", options:["Je suis plutôt pour, car ils m'aident à mieux retenir ce qu'on a appris en classe.","Je suis plutôt contre, car après une longue journée, j'ai besoin de me reposer aussi."]},
+      {bot:"Quel argument donnerais-tu à quelqu'un qui pense le contraire de toi ?", options:["Je lui dirais que sans un peu de pratique à la maison, on oublie vite les leçons.","Je lui dirais qu'il existe d'autres façons d'apprendre, comme les jeux ou la lecture."]},
+      {bot:"Penses-tu qu'il existe un juste équilibre possible ?", options:["Oui, je pense que des devoirs courts et utiles seraient une bonne solution.","Oui, un peu de devoirs mais avec plus de temps libre serait plus équilibré."]},
+      {bot:"Tu défends très bien ton point de vue, bravo pour cette réflexion !", options:["Merci, j'aime bien réfléchir à ce genre de question.","Merci beaucoup, c'est un sujet qui me tient à cœur."]}
+    ]
+  },
+  {key:"journee_typique", label:"Décrire une journée typique",
+    dialogue:[
+      {bot:"Décris-moi le déroulement d'une journée d'école typique, du matin jusqu'au soir.", options:["D'abord, je me réveille vers sept heures, ensuite je prends mon petit-déjeuner rapidement.","Le matin, je me prépare vite, puis je pars à l'école avec mes amis du quartier."]},
+      {bot:"Et que fais-tu une fois les cours terminés ?", options:["Ensuite, je rentre à la maison, je me détends un peu, puis je fais mes devoirs.","Après l'école, je fais du sport, puis je révise mes leçons avant le dîner."]},
+      {bot:"Comment se termine généralement ta journée ?", options:["Enfin, je dîne en famille, puis je lis un peu avant de dormir.","Pour finir, je discute avec mes parents, puis je me couche vers vingt-deux heures."]},
+      {bot:"Ta journée semble bien organisée, avec un bon équilibre !", options:["Merci, j'essaie vraiment de bien m'organiser chaque jour.","Merci, c'est vrai que l'organisation m'aide beaucoup."]}
+    ]
+  },
+  {key:"projet_reve", label:"Parler d'un projet ou d'un rêve",
+    dialogue:[
+      {bot:"As-tu un rêve ou un projet qui te tient particulièrement à cœur ?", options:["Mon rêve serait de devenir médecin, pour pouvoir aider les gens plus tard.","J'aimerais devenir architecte, car j'adore imaginer et dessiner des maisons."]},
+      {bot:"Qu'est-ce qui t'a donné envie de choisir ce métier ?", options:["C'est en voyant le médecin de ma famille aider les autres que j'ai eu cette envie.","C'est en construisant des maquettes que j'ai découvert cette passion pour la construction."]},
+      {bot:"Que fais-tu aujourd'hui pour te rapprocher de ce rêve ?", options:["Je travaille sérieusement en sciences, car c'est important pour ce métier.","Je dessine régulièrement et je m'intéresse aux différents styles de bâtiments."]},
+      {bot:"Continue comme ça, ton rêve est tout à fait à ta portée !", options:["Merci beaucoup, ça me motive énormément d'entendre ça !","Merci, je vais continuer à travailler dur pour y arriver !"]}
+    ]
+  },
+  {key:"comparer", label:"Comparer deux choses",
+    dialogue:[
+      {bot:"Préfères-tu la ville ou la campagne ? Compare les deux et explique ton choix.", options:["Je préfère la campagne, car elle est plus calme et moins polluée que la ville.","Je préfère la ville, car il y a plus d'activités et moins d'ennui qu'à la campagne."]},
+      {bot:"Et entre l'été et l'hiver, quelle saison préfères-tu ?", options:["Je préfère l'été, car il fait plus chaud et on peut aller à la plage plus souvent.","Je préfère l'hiver, car j'aime porter des pulls chauds et boire du chocolat chaud."]},
+      {bot:"Peux-tu comparer les avantages et les inconvénients de ces deux saisons ?", options:["L'été est agréable pour les vacances, mais l'hiver est plus reposant et cosy.","L'hiver est propice à la lecture, alors que l'été est meilleur pour le sport en extérieur."]},
+      {bot:"Tu sais très bien comparer et argumenter, bravo !", options:["Merci, j'aime bien peser le pour et le contre avant de choisir.","Merci beaucoup, c'est un exercice que je trouve amusant."]}
+    ]
+  }
+];
+
+const DISCUSSION_EN = [
+  {key:"greetings", label:"Greetings and introducing yourself",
+    dialogue:[
       {bot:"Hi! What's your name?", options:["My name is Salma.","I'm Yasmine."]},
       {bot:"Nice to meet you! How old are you?", options:["I'm 11 years old.","I am eleven, and you?"]},
       {bot:"Cool! Where are you from?", options:["I'm from Morocco.","I am from Rabat, Morocco."]},
       {bot:"That's great! See you soon!", options:["See you soon! Bye!","Goodbye, have a nice day!"]}
     ]
   },
-  {key:"school", label_fr:"L'école", label_en:"School and classroom objects",
-    dialogue_fr:[
-      {bot:"Qu'est-ce que tu as dans ton sac aujourd'hui ?", options:["J'ai mon cahier et ma trousse.","J'ai un livre et une règle."]},
-      {bot:"Quelle est ta matière préférée ?", options:["J'aime les mathématiques.","Ma matière préférée, c'est le français."]},
-      {bot:"Pourquoi tu aimes cette matière ?", options:["Parce que c'est amusant.","Parce que la maîtresse explique bien."]},
-      {bot:"C'est une bonne raison ! Bon courage pour tes cours.", options:["Merci beaucoup !","Merci, à bientôt !"]}
-    ],
-    dialogue_en:[
+  {key:"school", label:"School and classroom objects",
+    dialogue:[
       {bot:"What's in your school bag today?", options:["I have my notebook and my pencil case.","I have a book and a ruler."]},
       {bot:"What is your favourite subject?", options:["I like Mathematics.","My favourite subject is English."]},
       {bot:"Why do you like it?", options:["Because it is fun.","Because the teacher explains well."]},
       {bot:"Great answer! Good luck with your classes.", options:["Thank you very much!","Thanks, see you later!"]}
     ]
   },
-  {key:"family", label_fr:"Ma famille", label_en:"My family",
-    dialogue_fr:[
-      {bot:"Parle-moi de ta famille. Vous êtes combien ?", options:["Nous sommes cinq à la maison.","Nous sommes quatre : mes parents, mon frère et moi."]},
-      {bot:"Tu as des frères et sœurs ?", options:["Oui, j'ai une petite sœur.","Oui, j'ai un grand frère."]},
-      {bot:"Vous jouez souvent ensemble ?", options:["Oui, on joue tous les weekends.","Oui, surtout le soir après les devoirs."]},
-      {bot:"C'est chouette d'avoir une famille comme ça !", options:["Oui, j'adore ma famille.","Merci, c'est vrai !"]}
-    ],
-    dialogue_en:[
+  {key:"family", label:"My family",
+    dialogue:[
       {bot:"Tell me about your family. How many are you?", options:["We are five at home.","We are four: my parents, my brother and me."]},
       {bot:"Do you have any brothers or sisters?", options:["Yes, I have a little sister.","Yes, I have a big brother."]},
       {bot:"Do you often play together?", options:["Yes, we play every weekend.","Yes, especially in the evening."]},
       {bot:"That sounds like a lovely family!", options:["Yes, I love my family.","Thank you, it's true!"]}
     ]
   },
-  {key:"house", label_fr:"Ma maison", label_en:"My house",
-    dialogue_fr:[
-      {bot:"Tu habites dans une maison ou un appartement ?", options:["J'habite dans un appartement.","J'habite dans une maison."]},
-      {bot:"Quelle est ta pièce préférée ?", options:["Ma chambre, bien sûr !","Le salon, pour regarder des films."]},
-      {bot:"Qu'est-ce qu'il y a dans cette pièce ?", options:["Il y a mon lit et mon bureau.","Il y a un grand canapé et une télévision."]},
-      {bot:"Ça donne envie d'aller chez toi !", options:["Tu es toujours bienvenu(e) !","Merci, viens quand tu veux !"]}
-    ],
-    dialogue_en:[
+  {key:"house", label:"My house",
+    dialogue:[
       {bot:"Do you live in a house or a flat?", options:["I live in a flat.","I live in a house."]},
       {bot:"What is your favourite room?", options:["My bedroom, of course!","The living room, to watch films."]},
       {bot:"What is in that room?", options:["There is my bed and my desk.","There is a big sofa and a TV."]},
       {bot:"That sounds like a nice room!", options:["You're always welcome!","Thank you, come anytime!"]}
     ]
   },
-  {key:"clothes", label_fr:"Vêtements et couleurs", label_en:"Clothes and colours",
-    dialogue_fr:[
-      {bot:"Qu'est-ce que tu portes aujourd'hui ?", options:["Je porte un pantalon bleu et un pull.","Je porte une robe jaune."]},
-      {bot:"Quelle est ta couleur préférée ?", options:["Ma couleur préférée est le violet.","J'aime beaucoup le vert."]},
-      {bot:"Qu'est-ce que tu aimes porter le weekend ?", options:["J'aime porter un survêtement confortable.","J'aime porter mes baskets préférées."]},
-      {bot:"Ça a l'air très confortable !", options:["Oui, c'est parfait pour jouer.","Oui, exactement !"]}
-    ],
-    dialogue_en:[
+  {key:"clothes", label:"Clothes and colours",
+    dialogue:[
       {bot:"What are you wearing today?", options:["I'm wearing blue trousers and a jumper.","I'm wearing a yellow dress."]},
       {bot:"What is your favourite colour?", options:["My favourite colour is purple.","I really like green."]},
       {bot:"What do you like to wear on weekends?", options:["I like wearing comfy tracksuits.","I like wearing my favourite sneakers."]},
       {bot:"That sounds very comfortable!", options:["Yes, perfect for playing.","Yes, exactly!"]}
     ]
   },
-  {key:"food", label_fr:"Nourriture et boissons", label_en:"Food and drinks",
-    dialogue_fr:[
-      {bot:"Qu'est-ce que tu as mangé au petit-déjeuner ?", options:["J'ai mangé du pain avec du miel.","J'ai bu du lait et mangé des crêpes."]},
-      {bot:"Quel est ton plat préféré ?", options:["J'adore le couscous.","Mon plat préféré, c'est le tajine."]},
-      {bot:"Et comme boisson, qu'est-ce que tu préfères ?", options:["Je préfère le jus d'orange.","J'aime bien le thé à la menthe."]},
-      {bot:"Miam, ça donne faim !", options:["Oui, c'est délicieux !","Haha, tu devrais essayer !"]}
-    ],
-    dialogue_en:[
+  {key:"food", label:"Food and drinks",
+    dialogue:[
       {bot:"What did you eat for breakfast?", options:["I ate bread with honey.","I drank milk and ate pancakes."]},
       {bot:"What is your favourite dish?", options:["I love couscous.","My favourite dish is tajine."]},
       {bot:"And what drink do you prefer?", options:["I prefer orange juice.","I like mint tea."]},
       {bot:"Yum, that makes me hungry!", options:["Yes, it's delicious!","Haha, you should try it!"]}
     ]
   },
-  {key:"transport", label_fr:"Transports", label_en:"Transport and getting around",
-    dialogue_fr:[
-      {bot:"Comment tu vas à l'école ?", options:["Je vais à l'école en voiture.","J'y vais à pied avec mes amis."]},
-      {bot:"Ça prend combien de temps ?", options:["Ça prend environ dix minutes.","Ça prend un quart d'heure."]},
-      {bot:"Tu préfères le bus ou le vélo ?", options:["Je préfère le vélo, c'est plus rapide.","Je préfère le bus, c'est plus confortable."]},
-      {bot:"Bon choix, l'important c'est d'arriver à l'heure !", options:["Oui, je ne suis jamais en retard.","Exactement, c'est important !"]}
-    ],
-    dialogue_en:[
+  {key:"transport", label:"Transport and getting around",
+    dialogue:[
       {bot:"How do you go to school?", options:["I go to school by car.","I walk there with my friends."]},
       {bot:"How long does it take?", options:["It takes about ten minutes.","It takes a quarter of an hour."]},
       {bot:"Do you prefer the bus or a bike?", options:["I prefer the bike, it's faster.","I prefer the bus, it's more comfortable."]},
       {bot:"Good choice, being on time matters!", options:["Yes, I'm never late.","Exactly, that's important!"]}
     ]
   },
-  {key:"sports", label_fr:"Sports", label_en:"Sports and abilities",
-    dialogue_fr:[
-      {bot:"Est-ce que tu fais du sport ?", options:["Oui, je joue au basket.","Oui, je fais de la natation."]},
-      {bot:"Depuis combien de temps ?", options:["Depuis deux ans.","Depuis l'année dernière."]},
-      {bot:"Est-ce que tu es bon(ne) dans ce sport ?", options:["Oui, je peux courir très vite.","Je m'améliore chaque semaine."]},
-      {bot:"Bravo, continue comme ça !", options:["Merci, je vais m'entraîner encore !","Merci beaucoup !"]}
-    ],
-    dialogue_en:[
+  {key:"sports", label:"Sports and abilities",
+    dialogue:[
       {bot:"Do you play any sports?", options:["Yes, I play basketball.","Yes, I go swimming."]},
       {bot:"How long have you been doing it?", options:["For two years.","Since last year."]},
       {bot:"Are you good at this sport?", options:["Yes, I can run very fast.","I'm getting better every week."]},
       {bot:"Well done, keep it up!", options:["Thanks, I'll keep training!","Thank you very much!"]}
     ]
   },
-  {key:"freetime", label_fr:"Loisirs", label_en:"Free time and routines",
-    dialogue_fr:[
-      {bot:"Qu'est-ce que tu aimes faire pendant ton temps libre ?", options:["J'aime dessiner.","J'aime lire des bandes dessinées."]},
-      {bot:"À quelle heure tu te réveilles le weekend ?", options:["Je me réveille vers neuf heures.","Je me réveille assez tard, vers dix heures."]},
-      {bot:"Et le soir, qu'est-ce que tu fais avant de dormir ?", options:["Je lis un peu avant de dormir.","Je regarde une courte vidéo avec mes parents."]},
-      {bot:"Ça a l'air d'une belle routine !", options:["Oui, j'aime bien ma routine.","Merci, c'est vrai !"]}
-    ],
-    dialogue_en:[
+  {key:"freetime", label:"Free time and routines",
+    dialogue:[
       {bot:"What do you like doing in your free time?", options:["I like drawing.","I like reading comic books."]},
       {bot:"What time do you wake up on weekends?", options:["I wake up around nine.","I wake up quite late, around ten."]},
       {bot:"And in the evening, what do you do before bed?", options:["I read a little before sleeping.","I watch a short video with my parents."]},
       {bot:"That sounds like a nice routine!", options:["Yes, I like my routine.","Thanks, it's true!"]}
     ]
   },
-  {key:"health", label_fr:"Santé", label_en:"Health and feeling well",
-    dialogue_fr:[
-      {bot:"Comment tu te sens aujourd'hui ?", options:["Je me sens très bien, merci !","Je suis un peu fatigué(e) aujourd'hui."]},
-      {bot:"Qu'est-ce que tu fais pour rester en bonne santé ?", options:["Je mange des fruits et des légumes.","Je fais du sport et je dors bien."]},
-      {bot:"Bonne habitude ! Tu bois assez d'eau ?", options:["Oui, je bois beaucoup d'eau.","J'essaie de boire de l'eau toute la journée."]},
-      {bot:"Parfait, prends bien soin de toi !", options:["Merci, toi aussi !","Merci beaucoup !"]}
-    ],
-    dialogue_en:[
+  {key:"health", label:"Health and feeling well",
+    dialogue:[
       {bot:"How are you feeling today?", options:["I feel very well, thank you!","I feel a bit tired today."]},
       {bot:"What do you do to stay healthy?", options:["I eat fruit and vegetables.","I play sports and sleep well."]},
       {bot:"Good habit! Do you drink enough water?", options:["Yes, I drink lots of water.","I try to drink water all day."]},
@@ -1302,7 +1325,7 @@ const SEED = {
 
 let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
   apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false,
-  discussLang:'fr', discussTheme: DISCUSSION_THEMES[0].key, discussMode:'ai',
+  discussModule:'fr', discussThemeFr: DISCUSSION_FR[0].key, discussThemeEn: DISCUSSION_EN[0].key, discussMode:'ai',
   discussChat:[], discussChatLoading:false, discussChatError:null,
   discussGuidedStep:0,
   passwords:null, authenticated:false, authTarget:null, authError:null, pwSaveMsg:null,
@@ -1510,36 +1533,38 @@ function chapterCardHTML(c,s,compact){
 }
 
 /* ---------- ÉLÈVE : Discussion langue ---------- */
-function discussTheme(){ return DISCUSSION_THEMES.find(t=>t.key===state.discussTheme) || DISCUSSION_THEMES[0]; }
-function discussLangLabel(){ return state.discussLang==='en' ? 'anglais' : 'français'; }
-function discussLangCode(){ return state.discussLang==='en' ? 'en-US' : 'fr-FR'; }
-function discussLangColor(){ return state.discussLang==='en' ? '#8B5CF6' : '#3B6FB6'; }
+function discussThemes(){ return state.discussModule==='en' ? DISCUSSION_EN : DISCUSSION_FR; }
+function discussThemeKey(){ return state.discussModule==='en' ? state.discussThemeEn : state.discussThemeFr; }
+function discussTheme(){ const arr = discussThemes(); return arr.find(t=>t.key===discussThemeKey()) || arr[0]; }
+function discussLangLabel(){ return state.discussModule==='en' ? 'anglais' : 'français'; }
+function discussLangCode(){ return state.discussModule==='en' ? 'en-US' : 'fr-FR'; }
+function discussLangColor(){ return state.discussModule==='en' ? '#8B5CF6' : '#3B6FB6'; }
 
 function viewDiscuss(){
   const theme = discussTheme();
-  const themeLabel = state.discussLang==='en' ? theme.label_en : theme.label_fr;
-  const dialogue = state.discussLang==='en' ? theme.dialogue_en : theme.dialogue_fr;
+  const themeLabel = theme.label;
+  const dialogue = theme.dialogue;
   const hasKey = !!state.apiKey;
   const step = Math.min(state.discussGuidedStep, dialogue.length - 1);
   const turn = dialogue[step];
   const isLast = step >= dialogue.length - 1;
 
   let html = `<h2 class="section-title">Discussion langue</h2>
-  <p class="muted">S'entraîner à parler français et anglais, thème par thème, en discutant avec l'IA ou avec un dialogue guidé.</p>
+  <p class="muted">Deux modules séparés : le français au niveau 1AC pour s'exprimer avec des phrases élaborées, et l'anglais basique pour débuter à l'oral.</p>
 
   <div class="card" style="margin-bottom:14px;">
     <div class="form-grid">
       <div>
-        <label>Langue</label>
+        <label>Module</label>
         <div class="mode-switch" style="margin-top:4px;">
-          <button class="mode-btn ${state.discussLang==='fr'?'active':''}" data-discuss-lang="fr">Français</button>
-          <button class="mode-btn ${state.discussLang==='en'?'active':''}" data-discuss-lang="en">English</button>
+          <button class="mode-btn ${state.discussModule==='fr'?'active':''}" data-discuss-module="fr">🇲🇦 Français (niveau collège)</button>
+          <button class="mode-btn ${state.discussModule==='en'?'active':''}" data-discuss-module="en">🇬🇧 English (basic)</button>
         </div>
       </div>
       <div>
         <label>Thème</label>
         <select id="discuss-theme-select">
-          ${DISCUSSION_THEMES.map(t=>`<option value="${t.key}" ${state.discussTheme===t.key?'selected':''}>${esc(state.discussLang==='en'?t.label_en:t.label_fr)}</option>`).join('')}
+          ${discussThemes().map(t=>`<option value="${t.key}" ${discussThemeKey()===t.key?'selected':''}>${esc(t.label)}</option>`).join('')}
         </select>
       </div>
     </div>
@@ -1558,7 +1583,7 @@ function viewDiscuss(){
       </div>
       ${state.discussChatError? `<p class="muted" style="color:#B3261E;">⚠️ ${esc(state.discussChatError)} <button class="btn-ghost" id="discuss-chat-retry" style="margin-left:6px;">Réessayer</button></p>` : ''}
       <form id="discuss-chat-form" style="display:flex; gap:8px; flex-wrap:wrap;">
-        <input type="text" id="discuss-chat-input" placeholder="${state.discussLang==='en'?'Type your answer in English…':'Écris ta réponse en français…'}" style="flex:1; min-width:160px;" ${state.discussChatLoading?'disabled':''}>
+        <input type="text" id="discuss-chat-input" placeholder="${state.discussModule==='en'?'Type your answer in English…':'Écris ta réponse en français…'}" style="flex:1; min-width:160px;" ${state.discussChatLoading?'disabled':''}>
         <button class="btn btn-primary" type="submit" ${state.discussChatLoading?'disabled':''}>Envoyer</button>
       </form>
       <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
@@ -1627,21 +1652,23 @@ async function callGeminiText(promptText, apiKey){
 
 function discussSystemPrompt(){
   const theme = discussTheme();
-  const themeLabel = state.discussLang==='en' ? theme.label_en : theme.label_fr;
-  if(state.discussLang==='en'){
-    return `Tu es un ami virtuel amical qui aide une élève marocaine de 11 ans (1ère année collège, niveau débutant) à s'entraîner à parler anglais basique, sur le thème : "${themeLabel}".
+  const themeLabel = theme.label;
+  if(state.discussModule==='en'){
+    return `Tu es un ami virtuel amical qui aide une élève marocaine de 11 ans (1ère année collège) à débuter en anglais, niveau BASIQUE/DÉBUTANT (A1), sur le thème : "${themeLabel}".
 Règles :
-- Écris uniquement en anglais très simple (vocabulaire concret, phrases courtes, niveau A1).
-- Pose UNE question à la fois, en lien avec le thème.
+- Écris uniquement en anglais TRÈS simple (vocabulaire concret et courant, phrases courtes de 5-8 mots, niveau A1, aucune expression rare ou idée abstraite).
+- Pose UNE question à la fois, simple et directe, en lien avec le thème.
 - Si son message précédent contient une erreur, corrige-la gentiment en 1 courte phrase avant ta question (ex: "Good try! We say 'I go to school', not 'I goes to school'."), sinon félicite-la brièvement.
-- Reste toujours positif, encourageant, jamais sévère.
+- Reste toujours positif, encourageant, jamais sévère, comme pour un tout débutant qui découvre l'anglais.
 - Réponses courtes (2-3 phrases maximum).`;
   }
-  return `Tu es un ami virtuel amical qui aide une élève marocaine de 11 ans (1ère année collège) à s'entraîner à s'exprimer à l'oral en français, sur le thème : "${themeLabel}".
+  return `Tu es un ami virtuel amical qui aide une élève marocaine de 11 ans, en 1ère année collège (1AC), à s'entraîner à l'expression orale en FRANÇAIS, sur le thème : "${themeLabel}".
+Le français est une langue qu'elle maîtrise déjà bien à l'écrit comme à l'oral : ne simplifie PAS comme pour une débutante.
 Règles :
-- Écris en français simple et clair, adapté à son âge.
-- Pose UNE question à la fois, en lien avec le thème, pour relancer la conversation.
-- Si son message précédent contient une faute de grammaire, de conjugaison ou de vocabulaire, corrige-la gentiment en 1 courte phrase avant ta question, sinon félicite-la brièvement.
+- Écris en français riche et naturel, du niveau réellement attendu en 1AC : phrases complètes et structurées, connecteurs logiques (d'abord, ensuite, parce que, cependant…), vocabulaire varié adapté à son âge — pas de phrases ultra-courtes de débutant.
+- Pose UNE question à la fois, qui invite à argumenter, raconter ou décrire (pas juste des questions fermées à un mot), en lien avec le thème.
+- Si son message précédent contient une faute de grammaire, de conjugaison, d'accord ou de vocabulaire, corrige-la gentiment et précisément en 1 courte phrase avant ta question, sinon félicite-la brièvement pour la qualité ou la richesse de sa phrase.
+- Encourage-la à faire des phrases plus longues et plus riches au fil de la conversation.
 - Reste toujours positif, encourageant, jamais sévère.
 - Réponses courtes (2-3 phrases maximum).`;
 }
@@ -2124,11 +2151,11 @@ function bindPageEvents(){
     });
   }
 
-  page.querySelectorAll('[data-discuss-lang]').forEach(btn=>{
+  page.querySelectorAll('[data-discuss-module]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const val = btn.dataset.discussLang;
-      if(val===state.discussLang) return;
-      state.discussLang = val; state.discussGuidedStep = 0;
+      const val = btn.dataset.discussModule;
+      if(val===state.discussModule) return;
+      state.discussModule = val; state.discussGuidedStep = 0;
       state.discussChat = []; state.discussChatError = null;
       renderPage();
     });
@@ -2136,7 +2163,9 @@ function bindPageEvents(){
   const discussThemeSelect = document.getElementById('discuss-theme-select');
   if(discussThemeSelect){
     discussThemeSelect.addEventListener('change', ()=>{
-      state.discussTheme = discussThemeSelect.value; state.discussGuidedStep = 0;
+      if(state.discussModule==='en'){ state.discussThemeEn = discussThemeSelect.value; }
+      else { state.discussThemeFr = discussThemeSelect.value; }
+      state.discussGuidedStep = 0;
       state.discussChat = []; state.discussChatError = null;
       renderPage();
     });
@@ -2147,7 +2176,7 @@ function bindPageEvents(){
   page.querySelectorAll('[data-action="discuss-answer"]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const theme = discussTheme();
-      const dialogue = state.discussLang==='en' ? theme.dialogue_en : theme.dialogue_fr;
+      const dialogue = theme.dialogue;
       if(state.discussGuidedStep < dialogue.length - 1) state.discussGuidedStep += 1;
       renderPage();
     });
