@@ -102,13 +102,31 @@
   .mood-btn{ font-size:26px; background:#fff; border:2px solid var(--line); border-radius:50%; width:52px; height:52px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .mood-btn.selected{ border-color:var(--marge); box-shadow:0 0 0 3px rgba(192,57,43,0.15); }
 
-  .week-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
+  .week-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:12px; }
   @media (max-width:900px){ .week-grid{ grid-template-columns:repeat(2,1fr);} }
-  .day-col{ background:var(--card); border-radius:12px; box-shadow:var(--shadow); padding:10px; min-height:110px; }
-  .day-head{ font-weight:800; font-size:13px; margin-bottom:6px; color:var(--chalkboard-dark); text-transform:capitalize;}
+  @media (max-width:640px){ .week-grid{ grid-template-columns:1fr; } }
+  .day-col{ background:var(--card); border-radius:14px; box-shadow:var(--shadow); padding:12px; min-height:130px; display:flex; flex-direction:column; }
+  .day-col.today-col{ outline:2.5px solid var(--marge); outline-offset:1px; }
+  .day-head{ display:flex; align-items:center; justify-content:space-between; font-weight:800; font-size:14px; margin-bottom:8px; color:var(--chalkboard-dark); text-transform:capitalize;}
   .day-head.today{ color:var(--marge); }
-  .mini-task{ font-size:12px; padding:4px 6px; border-radius:7px; margin-bottom:4px; background:var(--paper); }
-  .mini-task.done{ opacity:.5; text-decoration:line-through; }
+  .day-count{ font-size:11px; font-weight:800; background:var(--paper); color:var(--ink-soft); border-radius:999px; padding:2px 8px; }
+  .day-head.today .day-count{ background:var(--marge); color:#fff; }
+  .week-empty{ font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:10px 2px; }
+  .mini-task{
+    display:flex; align-items:center; gap:8px; font-size:12.5px; padding:8px 9px; border-radius:9px; margin-bottom:6px;
+    background:var(--paper); border-left:4px solid var(--line); cursor:pointer; transition:transform .1s, box-shadow .1s;
+  }
+  .mini-task:hover{ box-shadow:0 2px 6px rgba(0,0,0,0.12); transform:translateY(-1px); }
+  .mini-task:active{ transform:translateY(0); }
+  .mini-task-check{
+    width:18px; height:18px; border-radius:6px; border:2px solid var(--line); background:#fff; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; color:#fff;
+  }
+  .mini-task.done .mini-task-check{ background:var(--chalkboard); border-color:var(--chalkboard); }
+  .mini-task-body{ flex:1; min-width:0; }
+  .mini-task-title{ font-weight:700; line-height:1.25; word-break:break-word; }
+  .mini-task.done .mini-task-title{ opacity:.55; text-decoration:line-through; }
+  .mini-task-sub{ font-size:10.5px; color:var(--ink-soft); margin-top:1px; }
 
   label{ display:block; font-weight:700; font-size:13px; margin:14px 0 6px; }
   input, select, textarea{ width:100%; font-family:'Nunito'; font-size:14px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--line); background:#fff; color:var(--ink); }
@@ -1260,12 +1278,29 @@ function typeLabel(k){ return (TYPES.find(x=>x.key===k)||{label:k}).label; }
 /* ---------- ÉLÈVE : Semaine ---------- */
 function viewWeek(){
   const dates = weekDates(); const iso = todayISO();
-  let html = `<h2 class="section-title">Cette semaine</h2><p class="muted">Vue d'ensemble, du lundi au dimanche.</p><div class="week-grid">`;
+  const weekTasks = state.tasks.filter(t=>dates.includes(t.date));
+  const weekDone = weekTasks.filter(t=>t.done).length;
+  let html = `<h2 class="section-title">Cette semaine</h2>
+    <p class="muted">Du lundi au dimanche · ${weekTasks.length} tâche(s), ${weekDone} terminée(s). Clique sur une tâche pour la cocher.</p>`;
+  if(weekTasks.length===0){
+    html += `<div class="empty"><span class="hand">Rien de prévu cette semaine !</span>Demande à un parent d'ajouter des tâches depuis l'onglet « Ajouter ».</div>`;
+  }
+  html += `<div class="week-grid">`;
   for(const d of dates){
-    const dayTasks = state.tasks.filter(t=>t.date===d);
-    html += `<div class="day-col"><div class="day-head ${d===iso?'today':''}">${fmtDayShort(d)}</div>
-      ${dayTasks.length===0 ? `<div style="font-size:12px;color:var(--ink-soft);">—</div>` :
-        dayTasks.map(t=>`<div class="mini-task ${t.done?'done':''}">${esc(t.title)}</div>`).join('')}</div>`;
+    const dayTasks = state.tasks.filter(t=>t.date===d).sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+    const isToday = d===iso;
+    html += `<div class="day-col ${isToday?'today-col':''}">
+      <div class="day-head ${isToday?'today':''}"><span>${fmtDayShort(d)}</span>${dayTasks.length?`<span class="day-count">${dayTasks.length}</span>`:''}</div>
+      ${dayTasks.length===0 ? `<div class="week-empty">Rien de prévu</div>` :
+        dayTasks.map(t=>{
+          const s = subj(t.subject);
+          return `<div class="mini-task ${t.done?'done':''}" data-action="toggle" data-id="${t.id}" style="border-left-color:${s.color}" title="Cliquer pour ${t.done?'décocher':'cocher comme fait'}">
+            <span class="mini-task-check">${t.done?'✓':''}</span>
+            <div class="mini-task-body"><div class="mini-task-title">${esc(t.title)}</div>
+              <div class="mini-task-sub">${esc(s.label)}${t.minutes?` · ${t.minutes} min`:''}</div></div>
+          </div>`;
+        }).join('')}
+      </div>`;
   }
   return html + `</div>`;
 }
