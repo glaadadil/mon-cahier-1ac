@@ -1323,7 +1323,7 @@ const SEED = {
   ],
 };;;;;
 
-let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', subjectFilter:'all', openSubjectEleve:null, openChapterId:null, openTaskId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
+let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today', selectedDate: null, subjectFilter:'all', openSubjectEleve:null, openChapterId:null, openTaskId:null, parentResourceSubject: SUBJECTS[0].key, editingChapterId:null,
   apiKey:null, genSubject: SUBJECTS[0].key, genChapterId:null, genDifficulty:'moyen', genResult:null, genError:null, genLoading:false,
   discussModule:'fr', discussThemeFr: DISCUSSION_FR[0].key, discussThemeEn: DISCUSSION_EN[0].key, discussMode:'ai',
   discussChat:[], discussChatLoading:false, discussChatError:null,
@@ -1333,6 +1333,7 @@ let state = { tasks: [], resources: {}, moods: {}, mode: 'eleve', view: 'today',
 
 function subj(key){ return SUBJECTS.find(s=>s.key===key) || {label:key,color:'#999'}; }
 function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function shiftDateISO(iso, days){ const d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
 function fmtDateLong(iso){ const d = new Date(iso+'T00:00:00'); return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'}); }
 function fmtDayShort(iso){ const d = new Date(iso+'T00:00:00'); return d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'}); }
 function weekDates(){
@@ -1416,21 +1417,34 @@ function renderPage(){
 
 /* ---------- ÉLÈVE : Aujourd'hui ---------- */
 function viewToday(){
-  const iso = todayISO();
+  if(!state.selectedDate) state.selectedDate = todayISO();
+  const iso = state.selectedDate;
+  const isToday = iso === todayISO();
   const tasks = state.tasks.filter(t=>t.date===iso).sort((a,b)=> (a.done?1:0)-(b.done?1:0));
-  const next = tasks.find(t=>!t.done);
+  const next = isToday ? tasks.find(t=>!t.done) : null;
   const mood = state.moods[iso];
-  let html = `<h2 class="section-title">Aujourd'hui, ${fmtDateLong(iso)}</h2>`;
+  const dayLabel = isToday ? `Aujourd'hui, ${fmtDateLong(iso)}` : fmtDateLong(iso).replace(/^./, c=>c.toUpperCase());
+  let html = `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+    <h2 class="section-title" style="margin-bottom:0;">${dayLabel}</h2>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <button class="btn-small" id="day-prev" title="Jour précédent">◀</button>
+      ${!isToday? `<button class="btn-small" id="day-today">Aujourd'hui</button>` : ''}
+      <button class="btn-small" id="day-next" title="Jour suivant">▶</button>
+    </div>
+  </div>`;
   if(next){
     html += `<div class="card next-card"><div class="eyebrow">Prochaine étape</div>
       <div class="task-title">${esc(next.title)}</div>
       <div class="task-sub">${esc(subj(next.subject).label)} ${next.minutes?`· ${next.minutes} min`:''}</div></div>`;
   }
   if(tasks.length===0){
-    html += `<div class="empty"><span class="hand">Rien de prévu aujourd'hui !</span>Demande à un parent d'ajouter une tâche si besoin.</div>`;
+    const emptyMsg = isToday ? "Rien de prévu aujourd'hui !" : "Rien de prévu ce jour-là !";
+    html += `<div class="empty"><span class="hand">${emptyMsg}</span>Demande à un parent d'ajouter une tâche si besoin.</div>`;
   } else { html += tasks.map(t=>taskRow(t)).join(''); }
-  html += `<div class="mood-row"><span class="muted" style="margin:0;">Ma journée :</span>
-    ${MOODS.map(m=>`<button class="mood-btn ${mood===m?'selected':''}" data-mood="${m}">${m}</button>`).join('')}</div>`;
+  if(isToday){
+    html += `<div class="mood-row"><span class="muted" style="margin:0;">Ma journée :</span>
+      ${MOODS.map(m=>`<button class="mood-btn ${mood===m?'selected':''}" data-mood="${m}">${m}</button>`).join('')}</div>`;
+  }
   return html;
 }
 function taskRow(t){
@@ -1466,7 +1480,7 @@ function viewWeek(){
   const weekTasks = state.tasks.filter(t=>dates.includes(t.date));
   const weekDone = weekTasks.filter(t=>t.done).length;
   let html = `<h2 class="section-title">Cette semaine</h2>
-    <p class="muted">Du lundi au dimanche · ${weekTasks.length} tâche(s), ${weekDone} terminée(s). Clique sur une tâche pour la cocher.</p>`;
+    <p class="muted">Du lundi au dimanche · ${weekTasks.length} tâche(s), ${weekDone} terminée(s). Coche la case pour valider une tâche, ou clique sur son titre pour voir l'énoncé et la réponse en détail.</p>`;
   if(weekTasks.length===0){
     html += `<div class="empty"><span class="hand">Rien de prévu cette semaine !</span>Demande à un parent d'ajouter des tâches depuis l'onglet « Ajouter ».</div>`;
   }
@@ -1475,14 +1489,16 @@ function viewWeek(){
     const dayTasks = state.tasks.filter(t=>t.date===d).sort((a,b)=>(a.done?1:0)-(b.done?1:0));
     const isToday = d===iso;
     html += `<div class="day-col ${isToday?'today-col':''}">
-      <div class="day-head ${isToday?'today':''}"><span>${fmtDayShort(d)}</span>${dayTasks.length?`<span class="day-count">${dayTasks.length}</span>`:''}</div>
+      <div class="day-head ${isToday?'today':''}" data-action="open-day" data-date="${d}" style="cursor:pointer;" title="Voir le détail de ce jour"><span>${fmtDayShort(d)}</span>${dayTasks.length?`<span class="day-count">${dayTasks.length}</span>`:''}</div>
       ${dayTasks.length===0 ? `<div class="week-empty">Rien de prévu</div>` :
         dayTasks.map(t=>{
           const s = subj(t.subject);
-          return `<div class="mini-task ${t.done?'done':''}" data-action="toggle" data-id="${t.id}" style="border-left-color:${s.color}" title="Cliquer pour ${t.done?'décocher':'cocher comme fait'}">
-            <span class="mini-task-check">${t.done?'✓':''}</span>
-            <div class="mini-task-body"><div class="mini-task-title">${esc(t.title)}</div>
-              <div class="mini-task-sub">${esc(s.label)}${t.minutes?` · ${t.minutes} min`:''}</div></div>
+          return `<div class="mini-task ${t.done?'done':''}" style="border-left-color:${s.color}">
+            <span class="mini-task-check" data-action="toggle" data-id="${t.id}" title="Cliquer pour ${t.done?'décocher':'cocher comme fait'}">${t.done?'✓':''}</span>
+            <div class="mini-task-body" data-action="open-day" data-date="${d}" data-task-id="${t.id}" style="cursor:pointer;" title="Voir le détail">
+              <div class="mini-task-title">${esc(t.title)}</div>
+              <div class="mini-task-sub">${esc(s.label)}${t.minutes?` · ${t.minutes} min`:''}</div>
+            </div>
           </div>`;
         }).join('')}
       </div>`;
@@ -1981,6 +1997,29 @@ function bindPageEvents(){
       renderPage();
     });
   });
+  const dayPrevBtn = document.getElementById('day-prev');
+  if(dayPrevBtn) dayPrevBtn.addEventListener('click', ()=>{
+    state.selectedDate = shiftDateISO(state.selectedDate || todayISO(), -1);
+    state.openTaskId = null; renderPage();
+  });
+  const dayNextBtn = document.getElementById('day-next');
+  if(dayNextBtn) dayNextBtn.addEventListener('click', ()=>{
+    state.selectedDate = shiftDateISO(state.selectedDate || todayISO(), 1);
+    state.openTaskId = null; renderPage();
+  });
+  const dayTodayBtn = document.getElementById('day-today');
+  if(dayTodayBtn) dayTodayBtn.addEventListener('click', ()=>{
+    state.selectedDate = todayISO();
+    state.openTaskId = null; renderPage();
+  });
+  page.querySelectorAll('[data-action="open-day"]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      state.selectedDate = el.dataset.date;
+      state.openTaskId = el.dataset.taskId || null;
+      state.view = 'today';
+      render();
+    });
+  });
   page.querySelectorAll('.mood-btn').forEach(btn=>{
     btn.addEventListener('click', async ()=>{ state.moods[todayISO()] = btn.dataset.mood; await saveMoods(); renderPage(); });
   });
@@ -2385,7 +2424,11 @@ function bindShellEvents(){
     });
   });
   document.querySelectorAll('.tab').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ state.view = btn.dataset.view; render(); });
+    btn.addEventListener('click', ()=>{
+      state.view = btn.dataset.view;
+      if(btn.dataset.view==='today') state.selectedDate = todayISO();
+      render();
+    });
   });
   const logoutBtn = document.getElementById('logout-btn');
   if(logoutBtn){
