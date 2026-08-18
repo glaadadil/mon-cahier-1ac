@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mon Cahier — 1AC</title>
+<title>Cahier de Hidaya — 1AC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -212,6 +212,7 @@
 </div>
 
 <script>
+const STUDENT_NAME = 'Hidaya';
 const SUBJECTS = [
   {key:'arabe',    label:'Arabe',                 color:'#E4572E'},
   {key:'islamique',label:'Éducation islamique',    color:'#2E7D5B'},
@@ -1378,10 +1379,10 @@ async function saveMoods(){ try{ await storageSet('moods', JSON.stringify(state.
 function shell(){
   return `
     <div class="topbar">
-      <div class="brand"><span class="title">Mon Cahier</span><span class="subtitle">1AC</span></div>
+      <div class="brand"><span class="title">Cahier de ${STUDENT_NAME}</span><span class="subtitle">1AC</span></div>
       <div style="display:flex; align-items:center; gap:10px;">
         <div class="mode-switch">
-          <button class="mode-btn ${state.mode==='eleve'?'active':''}" data-mode="eleve">Élève</button>
+          <button class="mode-btn ${state.mode==='eleve'?'active':''}" data-mode="eleve">${STUDENT_NAME}</button>
           <button class="mode-btn ${state.mode==='parent'?'active':''}" data-mode="parent">Parent</button>
         </div>
         <button id="logout-btn" title="Verrouiller le cahier" style="background:transparent; border:1.5px solid rgba(255,255,255,0.35); color:var(--chalk-white); border-radius:999px; padding:8px 12px; font-weight:700; font-size:13px; cursor:pointer; font-family:'Nunito';">🔒</button>
@@ -1424,7 +1425,9 @@ function viewToday(){
   const next = isToday ? tasks.find(t=>!t.done) : null;
   const mood = state.moods[iso];
   const dayLabel = isToday ? `Aujourd'hui, ${fmtDateLong(iso)}` : fmtDateLong(iso).replace(/^./, c=>c.toUpperCase());
-  let html = `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+  let html = '';
+  if(isToday) html += `<p class="hand" style="font-size:20px; margin:0 0 4px;">Salut ${STUDENT_NAME} 👋</p>`;
+  html += `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
     <h2 class="section-title" style="margin-bottom:0;">${dayLabel}</h2>
     <div style="display:flex; gap:6px; align-items:center;">
       <button class="btn-small" id="day-prev" title="Jour précédent">◀</button>
@@ -1667,7 +1670,7 @@ async function callGeminiText(promptText, apiKey){
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       contents: promptText,
-      generationConfig: { temperature: 0.8 }
+      generationConfig: { temperature: 0.8, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } }
     })
   });
   if(!resp.ok){
@@ -1876,10 +1879,10 @@ function viewResourcesParent(){
 
   html += `<div class="card" style="margin-top:22px;">
     <h2 class="section-title" style="font-size:22px;">Sécurité</h2>
-    <p class="muted">Change les mots de passe des espaces Élève et Parent.</p>
+    <p class="muted">Change les mots de passe des espaces ${STUDENT_NAME} et Parent.</p>
     <form id="password-form">
       <div class="form-grid">
-        <div><label>Nouveau mot de passe Élève</label><input type="password" id="pw-eleve" placeholder="${state.passwords? '••••' : ''}"></div>
+        <div><label>Nouveau mot de passe ${STUDENT_NAME}</label><input type="password" id="pw-eleve" placeholder="${state.passwords? '••••' : ''}"></div>
         <div><label>Nouveau mot de passe Parent</label><input type="password" id="pw-parent" placeholder="${state.passwords? '••••' : ''}"></div>
       </div>
       <p class="muted" style="font-size:12px; margin:6px 0 0;">Laisse un champ vide pour ne pas changer ce mot de passe.</p>
@@ -2300,6 +2303,8 @@ async function callGeminiJSON(promptText, apiKey, schema){
         responseMimeType: 'application/json',
         responseSchema: schema,
         temperature: 0.8,
+        maxOutputTokens: 4096,
+        thinkingConfig: { thinkingBudget: 0 },
       }
     })
   });
@@ -2309,10 +2314,17 @@ async function callGeminiJSON(promptText, apiKey, schema){
     throw new Error(`Erreur du service IA (code ${resp.status}). Réessaie plus tard.`);
   }
   const data = await resp.json();
-  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+  const candidate = data && data.candidates && data.candidates[0];
+  const text = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text;
+  if(candidate && candidate.finishReason === 'MAX_TOKENS' && !text){
+    throw new Error("L'IA a été coupée avant de finir sa réponse. Clique sur « Générer un autre » pour réessayer.");
+  }
   if(!text) throw new Error("Réponse vide de l'IA, réessaie.");
   let parsed;
-  try{ parsed = JSON.parse(text); }catch(e){ throw new Error("Réponse de l'IA illisible, réessaie."); }
+  try{ parsed = JSON.parse(text); }catch(e){
+    if(candidate && candidate.finishReason === 'MAX_TOKENS') throw new Error("L'IA a été coupée avant de finir sa réponse. Clique sur « Générer un autre » pour réessayer.");
+    throw new Error("Réponse de l'IA illisible, réessaie.");
+  }
   return parsed;
 }
 
@@ -2441,9 +2453,9 @@ function bindShellEvents(){
 function viewSetupPasswords(){
   return `<div class="auth-wrap"><div class="auth-card">
     <div class="title">Bienvenue !</div>
-    <p class="muted">Avant de commencer, crée un mot de passe pour l'espace Élève et un autre pour l'espace Parent. C'est simple, juste pour éviter les erreurs de manipulation (ce n'est pas une protection très sécurisée).</p>
+    <p class="muted">Le cahier de ${STUDENT_NAME} est presque prêt. Avant de commencer, crée un mot de passe pour son espace et un autre pour l'espace Parent. C'est simple, juste pour éviter les erreurs de manipulation (ce n'est pas une protection très sécurisée).</p>
     <form id="setup-form" style="text-align:left;">
-      <label>Mot de passe Élève</label><input type="password" id="setup-eleve" required placeholder="Ex. 1234">
+      <label>Mot de passe ${STUDENT_NAME}</label><input type="password" id="setup-eleve" required placeholder="Ex. 1234">
       <label>Mot de passe Parent</label><input type="password" id="setup-parent" required placeholder="Ex. maman2026">
       ${state.authError? `<p class="auth-error">${esc(state.authError)}</p>` : ''}
       <button type="submit" class="btn btn-primary" style="width:100%;">Créer les mots de passe</button>
@@ -2457,12 +2469,12 @@ function viewLogin(){
       <div class="title">Qui utilise le cahier ?</div>
       <p class="muted">Choisis ton espace pour continuer.</p>
       <div class="role-grid">
-        <button class="role-btn" data-role="eleve"><span class="role-emoji">👧</span><span class="role-label">Élève</span></button>
+        <button class="role-btn" data-role="eleve"><span class="role-emoji">👧</span><span class="role-label">${STUDENT_NAME}</span></button>
         <button class="role-btn" data-role="parent"><span class="role-emoji">👨‍👩‍👧</span><span class="role-label">Parent</span></button>
       </div>
     </div></div>`;
   }
-  const roleLabel = state.authTarget==='eleve' ? 'Élève' : 'Parent';
+  const roleLabel = state.authTarget==='eleve' ? STUDENT_NAME : 'Parent';
   return `<div class="auth-wrap"><div class="auth-card">
     <div class="title">Espace ${roleLabel}</div>
     <p class="muted">Entre le mot de passe pour continuer.</p>
