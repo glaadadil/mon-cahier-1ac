@@ -1670,7 +1670,7 @@ async function callGeminiText(promptText, apiKey){
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       contents: promptText,
-      generationConfig: { temperature: 0.8, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } }
+      generationConfig: { temperature: 0.8, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } }
     })
   });
   if(!resp.ok){
@@ -2303,7 +2303,7 @@ async function callGeminiJSON(promptText, apiKey, schema){
         responseMimeType: 'application/json',
         responseSchema: schema,
         temperature: 0.8,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
         thinkingConfig: { thinkingBudget: 0 },
       }
     })
@@ -2316,13 +2316,13 @@ async function callGeminiJSON(promptText, apiKey, schema){
   const data = await resp.json();
   const candidate = data && data.candidates && data.candidates[0];
   const text = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text;
-  if(candidate && candidate.finishReason === 'MAX_TOKENS' && !text){
-    throw new Error("L'IA a été coupée avant de finir sa réponse. Clique sur « Générer un autre » pour réessayer.");
+  const wasCutOff = candidate && candidate.finishReason === 'MAX_TOKENS';
+  if(wasCutOff){
+    throw new Error("L'IA a été coupée avant de finir sa réponse (texte trop long). Clique sur « Générer un autre » pour réessayer.");
   }
   if(!text) throw new Error("Réponse vide de l'IA, réessaie.");
   let parsed;
   try{ parsed = JSON.parse(text); }catch(e){
-    if(candidate && candidate.finishReason === 'MAX_TOKENS') throw new Error("L'IA a été coupée avant de finir sa réponse. Clique sur « Générer un autre » pour réessayer.");
     throw new Error("Réponse de l'IA illisible, réessaie.");
   }
   return parsed;
@@ -2407,6 +2407,7 @@ Niveau de difficulté souhaité : ${diffLabel}
 
 Génère UN NOUVEL exercice original (différent de l'exemple du cours) adapté à cette leçon et à ce niveau de difficulté, avec sa correction complète, claire et exacte.
 Rédige l'énoncé et la correction entièrement en ${langue}, dans un style simple et adapté à un enfant de 11 ans.
+Reste CONCIS : énoncé de 3 à 6 phrases maximum, correction de 2 à 5 phrases maximum. Ne mets JAMAIS de voyelles/diacritiques (tachkil) sur le texte arabe.
 Réponds uniquement avec un objet JSON valide contenant exactement deux clés : "enonce" et "reponse". Aucun texte en dehors du JSON.`;
 
   state.genLoading = true; state.genError = null; renderPage();
